@@ -82,7 +82,7 @@
                 <ImageView
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:src="@android:drawable/ic_menu_myplaces"
+                    android:src="@drawable/person"
                     android:tint="#666666" />
 
                 <TextView
@@ -97,8 +97,8 @@
                 <ImageView
                     android:layout_width="20dp"
                     android:layout_height="20dp"
-                    android:src="@android:drawable/ic_menu_more"
-                    android:rotation="270"
+                    android:src="@drawable/rightarrow"
+                    android:rotation="0"
                     android:tint="#999999" />
 
             </LinearLayout>
@@ -140,8 +140,8 @@
                 <ImageView
                     android:layout_width="20dp"
                     android:layout_height="20dp"
-                    android:src="@android:drawable/ic_menu_more"
-                    android:rotation="270"
+                    android:src="@drawable/rightarrow"
+                    android:rotation="0"
                     android:tint="#999999" />
 
             </LinearLayout>
@@ -168,7 +168,7 @@
                 <ImageView
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:src="@android:drawable/ic_menu_recent_history"
+                    android:src="@drawable/history"
                     android:tint="#666666" />
 
                 <TextView
@@ -183,8 +183,8 @@
                 <ImageView
                     android:layout_width="20dp"
                     android:layout_height="20dp"
-                    android:src="@android:drawable/ic_menu_more"
-                    android:rotation="270"
+                    android:src="@drawable/rightarrow"
+                    android:rotation="0"
                     android:tint="#999999" />
 
             </LinearLayout>
@@ -211,7 +211,7 @@
                 <ImageView
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:src="@android:drawable/ic_menu_manage"
+                    android:src="@drawable/setting"
                     android:tint="#666666" />
 
                 <TextView
@@ -226,8 +226,8 @@
                 <ImageView
                     android:layout_width="20dp"
                     android:layout_height="20dp"
-                    android:src="@android:drawable/ic_menu_more"
-                    android:rotation="270"
+                    android:src="@drawable/rightarrow"
+                    android:rotation="0"
                     android:tint="#999999" />
 
             </LinearLayout>
@@ -254,7 +254,7 @@
                 <ImageView
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:src="@android:drawable/ic_menu_info_details"
+                    android:src="@drawable/aboutus"
                     android:tint="#666666" />
 
                 <TextView
@@ -269,8 +269,8 @@
                 <ImageView
                     android:layout_width="20dp"
                     android:layout_height="20dp"
-                    android:src="@android:drawable/ic_menu_more"
-                    android:rotation="270"
+                    android:src="@drawable/rightarrow"
+                    android:rotation="0"
                     android:tint="#999999" />
 
             </LinearLayout>
@@ -297,7 +297,7 @@
                 <ImageView
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:src="@android:drawable/ic_menu_send"
+                    android:src="@drawable/feedback"
                     android:tint="#666666" />
 
                 <TextView
@@ -312,8 +312,8 @@
                 <ImageView
                     android:layout_width="20dp"
                     android:layout_height="20dp"
-                    android:src="@android:drawable/ic_menu_more"
-                    android:rotation="270"
+                    android:src="@drawable/rightarrow"
+                    android:rotation="0"
                     android:tint="#999999" />
 
             </LinearLayout>
