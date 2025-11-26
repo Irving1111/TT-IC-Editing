@@ -85,29 +85,45 @@
             android:gravity="center"
             android:orientation="horizontal">
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnCurrentWeather"
+                style="@style/Widget.MaterialComponents.Button"
                 android:layout_width="0dp"
                 android:layout_height="70dp"
                 android:layout_margin="8dp"
                 android:layout_weight="1"
-                android:background="@drawable/large_bubble_button_background"
-                android:drawablePadding="4dp"
-                android:text="📍\n城市"
+                android:background="@drawable/function_button_city_background"
+                android:gravity="center"
+                android:paddingHorizontal="32dp"
+                android:text="城市"
+                android:textAllCaps="false"
                 android:textColor="@android:color/white"
-                android:textSize="14sp" />
+                android:textSize="16sp"
+                app:cornerRadius="40dp"
+                app:icon="@drawable/ic_city_pin"
+                app:iconGravity="textStart"
+                app:iconPadding="12dp"
+                app:iconTint="@android:color/white" />
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnForecastWeather"
+                style="@style/Widget.MaterialComponents.Button"
                 android:layout_width="0dp"
                 android:layout_height="70dp"
                 android:layout_margin="8dp"
                 android:layout_weight="1"
-                android:background="@drawable/large_bubble_button_background"
-                android:drawablePadding="4dp"
-                android:text="⚡\n预测"
+                android:background="@drawable/function_button_forecast_background"
+                android:gravity="center"
+                android:paddingHorizontal="32dp"
+                android:text="预测"
+                android:textAllCaps="false"
                 android:textColor="@android:color/white"
-                android:textSize="14sp" />
+                android:textSize="16sp"
+                app:cornerRadius="40dp"
+                app:icon="@drawable/ic_forecast_flash"
+                app:iconGravity="textStart"
+                app:iconPadding="12dp"
+                app:iconTint="@android:color/white" />
         </LinearLayout>
     </LinearLayout>
 
