@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/gradient_background"
+    tools:context=".MainActivity">
+
+    <!-- ViewPager2 用于滑动切换页面 -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewPager"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@id/llBottomButtons"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- 底部按钮容器 -->
+    <LinearLayout
+        android:id="@+id/llBottomButtons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:paddingBottom="24dp"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <!-- 城市选择按钮 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnBeijing"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_margin="6dp"
+                android:layout_weight="1"
+                android:background="@drawable/bubble_button_background"
+                android:text="北京"
+                android:textColor="@android:color/white"
+                android:textSize="16sp" />
+
+            <Button
+                android:id="@+id/btnShanghai"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_margin="6dp"
+                android:layout_weight="1"
+                android:background="@drawable/bubble_button_background"
+                android:text="上海"
+                android:textColor="@android:color/white"
+                android:textSize="16sp" />
+
+            <Button
+                android:id="@+id/btnGuangzhou"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_margin="6dp"
+                android:layout_weight="1"
+                android:background="@drawable/bubble_button_selected_background"
+                android:text="广州"
+                android:textColor="@android:color/white"
+                android:textSize="16sp" />
+
+            <Button
+                android:id="@+id/btnShenzhen"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_margin="6dp"
+                android:layout_weight="1"
+                android:background="@drawable/bubble_button_background"
+                android:text="深圳"
+                android:textColor="@android:color/white"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <!-- 功能按钮 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnCurrentWeather"
+                android:layout_width="0dp"
+                android:layout_height="70dp"
+                android:layout_margin="8dp"
+                android:layout_weight="1"
+                android:background="@drawable/large_bubble_button_background"
+                android:drawablePadding="4dp"
+                android:text="📍\n城市"
+                android:textColor="@android:color/white"
+                android:textSize="14sp" />
+
+            <Button
+                android:id="@+id/btnForecastWeather"
+                android:layout_width="0dp"
+                android:layout_height="70dp"
+                android:layout_margin="8dp"
+                android:layout_weight="1"
+                android:background="@drawable/large_bubble_button_background"
+                android:drawablePadding="4dp"
+                android:text="⚡\n预测"
+                android:textColor="@android:color/white"
+                android:textSize="14sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- 加载进度 -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
