@@ -82,48 +82,81 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/function_button_container_background"
             android:gravity="center"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:padding="10dp">
 
-            <com.google.android.material.button.MaterialButton
+            <LinearLayout
                 android:id="@+id/btnCurrentWeather"
-                style="@style/Widget.MaterialComponents.Button"
                 android:layout_width="0dp"
-                android:layout_height="70dp"
-                android:layout_margin="8dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
                 android:layout_weight="1"
-                android:background="@drawable/function_button_city_background"
+                android:background="@android:color/transparent"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackgroundBorderless"
                 android:gravity="center"
-                android:paddingHorizontal="32dp"
-                android:text="城市"
-                android:textAllCaps="false"
-                android:textColor="@android:color/white"
-                android:textSize="16sp"
-                app:cornerRadius="40dp"
-                app:icon="@drawable/ic_city_pin"
-                app:iconGravity="textStart"
-                app:iconPadding="12dp"
-                app:iconTint="@android:color/white" />
+                android:minHeight="0dp"
+                android:orientation="vertical"
+                android:paddingHorizontal="24dp"
+                android:paddingVertical="12dp">
 
-            <com.google.android.material.button.MaterialButton
+                <ImageView
+                    android:id="@+id/ivCurrentIcon"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:contentDescription="@string/app_name"
+                    android:src="@drawable/ic_city_pin"
+                    android:tint="#E6FFFFFF" />
+
+                <TextView
+                    android:id="@+id/tvCurrentLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="城市"
+                    android:textColor="#E6FFFFFF"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <LinearLayout
                 android:id="@+id/btnForecastWeather"
-                style="@style/Widget.MaterialComponents.Button"
                 android:layout_width="0dp"
-                android:layout_height="70dp"
-                android:layout_margin="8dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
                 android:layout_weight="1"
-                android:background="@drawable/function_button_forecast_background"
+                android:background="@android:color/transparent"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackgroundBorderless"
                 android:gravity="center"
-                android:paddingHorizontal="32dp"
-                android:text="预测"
-                android:textAllCaps="false"
-                android:textColor="@android:color/white"
-                android:textSize="16sp"
-                app:cornerRadius="40dp"
-                app:icon="@drawable/ic_forecast_flash"
-                app:iconGravity="textStart"
-                app:iconPadding="12dp"
-                app:iconTint="@android:color/white" />
+                android:minHeight="0dp"
+                android:orientation="vertical"
+                android:paddingHorizontal="24dp"
+                android:paddingVertical="12dp">
+
+                <ImageView
+                    android:id="@+id/ivForecastIcon"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:contentDescription="@string/app_name"
+                    android:src="@drawable/ic_forecast_flash"
+                    android:tint="#E6FFFFFF" />
+
+                <TextView
+                    android:id="@+id/tvForecastLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="预测"
+                    android:textColor="#E6FFFFFF"
+                    android:textSize="14sp" />
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 

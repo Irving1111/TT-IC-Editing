@@ -1,9 +1,12 @@
 package com.example.homework_3
 
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -14,7 +17,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.core.widget.ImageViewCompat
 import androidx.viewpager2.adapter.FragmentStateAdapter
+import androidx.viewpager2.widget.ViewPager2
 import com.example.homework_3.adapter.ForecastAdapter
 import com.example.homework_3.databinding.ActivityMainBinding
 import com.example.homework_3.model.Cast
@@ -50,6 +55,12 @@ class MainActivity : AppCompatActivity() {
     private fun initViews() {
         // 设置ViewPager2
         binding.viewPager.adapter = WeatherPagerAdapter(this)
+        binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+                updateFunctionButtonSelection(position)
+            }
+        })
 
         // 设置城市按钮点击事件
         binding.btnBeijing.setOnClickListener {
@@ -75,12 +86,16 @@ class MainActivity : AppCompatActivity() {
         // 城市按钮 - 切换到实时天气页面
         binding.btnCurrentWeather.setOnClickListener {
             binding.viewPager.currentItem = 0
+            updateFunctionButtonSelection(0)
         }
 
         // 预测按钮 - 切换到预报页面
         binding.btnForecastWeather.setOnClickListener {
             binding.viewPager.currentItem = 1
+            updateFunctionButtonSelection(1)
         }
+
+        updateFunctionButtonSelection(0)
     }
 
     private fun updateCityButtonSelection(selectedCity: String) {
@@ -105,6 +120,49 @@ class MainActivity : AppCompatActivity() {
     private fun loadWeather(cityName: String) {
         val cityCode = cityCodeMap[cityName] ?: return
         viewModel.loadWeather(cityCode, cityName)
+    }
+
+    private fun updateFunctionButtonSelection(selectedPage: Int) {
+        val isCurrentSelected = selectedPage == 0
+        val selectedColor = Color.WHITE
+        val unselectedColor = Color.parseColor("#E6FFFFFF")
+
+        applyFunctionButtonState(
+            isCurrentSelected,
+            binding.btnCurrentWeather,
+            binding.ivCurrentIcon,
+            binding.tvCurrentLabel,
+            R.drawable.function_button_city_background,
+            selectedColor,
+            unselectedColor
+        )
+
+        applyFunctionButtonState(
+            !isCurrentSelected,
+            binding.btnForecastWeather,
+            binding.ivForecastIcon,
+            binding.tvForecastLabel,
+            R.drawable.function_button_forecast_background,
+            selectedColor,
+            unselectedColor
+        )
+    }
+
+    private fun applyFunctionButtonState(
+        isSelected: Boolean,
+        container: View,
+        iconView: ImageView,
+        labelView: TextView,
+        selectedBackgroundRes: Int,
+        selectedColor: Int,
+        unselectedColor: Int
+    ) {
+        val color = if (isSelected) selectedColor else unselectedColor
+        container.setBackgroundResource(
+            if (isSelected) selectedBackgroundRes else android.R.color.transparent
+        )
+        labelView.setTextColor(color)
+        ImageViewCompat.setImageTintList(iconView, ColorStateList.valueOf(color))
     }
 
     private fun observeViewModel() {
