@@ -245,8 +245,8 @@ internal class PhotoEditorImpl @SuppressLint("ClickableViewAccessibility") const
         
         if (imgWidth <= 0 || imgHeight <= 0) return
         
-        val viewWidth = imageView.width
-        val viewHeight = imageView.height
+        val viewWidth = photoEditorView.width  // 使用 photoEditorView 的宽度
+        val viewHeight = photoEditorView.height  // 使用 photoEditorView 的高度
         
         if (viewWidth <= 0 || viewHeight <= 0) return
         
@@ -260,6 +260,8 @@ internal class PhotoEditorImpl @SuppressLint("ClickableViewAccessibility") const
         val scaledHeight = imgHeight * baseScale
         val dx = (viewWidth - scaledWidth) / 2f
         val dy = (viewHeight - scaledHeight) / 2f
+        
+        android.util.Log.d("PhotoEditorImpl", "setInitialScale: imgSize=$imgWidth x $imgHeight, viewSize=$viewWidth x $viewHeight, baseScale=$baseScale, offset=($dx, $dy)")
         
         // 应用初始变换
         imageMatrix.reset()
@@ -323,15 +325,17 @@ internal class PhotoEditorImpl @SuppressLint("ClickableViewAccessibility") const
         return true
     }
     
-    // 重置图片变换（裁剪、旋转、翻转后调用）
+    // 重置图片变换（裁剪、旋转、翻转、图片加载后调用）
     private fun resetTransform() {
         isInitialScaleSet = false
         imageMatrix.reset()
         scaleFactor = 1.0f
         baseScale = 1.0f
         imageView.imageMatrix = imageMatrix
-        // 重新设置初始缩放
-        imageView.post { setInitialScale() }
+        // 延迟设置初始缩放，确保视图已经布局完成
+        photoEditorView.post { 
+            setInitialScale() 
+        }
     }
 
 

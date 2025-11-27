@@ -43,23 +43,22 @@ internal class FilterImageView @JvmOverloads constructor(
 
     override fun setImageMatrix(matrix: Matrix) {
         super.setImageMatrix(matrix)
-        mOnImageChangedListener?.onBitmapLoaded(bitmap)
+        // 不触发回调，因为只是变换矩阵，不是图片内容变化
     }
 
     override fun setImageState(state: IntArray, merge: Boolean) {
         super.setImageState(state, merge)
-        mOnImageChangedListener?.onBitmapLoaded(bitmap)
+        // 不触发回调，只是状态变化
     }
 
     override fun setImageTintList(tint: ColorStateList?) {
         super.setImageTintList(tint)
-        mOnImageChangedListener?.onBitmapLoaded(bitmap)
-
+        // 不触发回调，只是着色变化
     }
 
     override fun setImageTintMode(tintMode: PorterDuff.Mode?) {
         super.setImageTintMode(tintMode)
-        mOnImageChangedListener?.onBitmapLoaded(bitmap)
+        // 不触发回调，只是着色模式变化
     }
 
     override fun setImageDrawable(drawable: Drawable?) {
@@ -82,7 +81,7 @@ internal class FilterImageView @JvmOverloads constructor(
 
     override fun setImageLevel(level: Int) {
         super.setImageLevel(level)
-        mOnImageChangedListener?.onBitmapLoaded(bitmap)
+        // 不触发回调，只是level变化
     }
 
     val bitmap: Bitmap?

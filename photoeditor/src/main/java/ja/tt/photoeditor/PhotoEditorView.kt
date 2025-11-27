@@ -70,6 +70,8 @@ class PhotoEditorView @JvmOverloads constructor(
                 mImageFilterView.setFilterEffect(PhotoFilter.NONE)
                 mImageFilterView.setSourceBitmap(sourceBitmap)
                 Log.d(TAG, "onBitmapLoaded() called with: sourceBitmap = [$sourceBitmap]")
+                // 通知图片已加载，需要重新设置初始缩放
+                onImageChangedCallback?.invoke()
             }
         })
 
@@ -80,6 +82,10 @@ class PhotoEditorView @JvmOverloads constructor(
         addView(mImageFilterView, filterParam)
 
         setWillNotDraw(false)
+        
+        // 允许子视图超出边界显示（用于图片平移/缩放）
+        clipChildren = false
+        clipToPadding = false
     }
 
     @SuppressLint("Recycle")
