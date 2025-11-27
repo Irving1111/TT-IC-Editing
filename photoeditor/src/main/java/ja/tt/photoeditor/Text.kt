@@ -24,6 +24,8 @@ internal class Text(
 
     private var mTextView: TextView? = null
     private var rotateHandle: View? = null
+    private var rotateStartAngle = 0f
+    private var rotateStartRotation = 0f
 
     fun buildView(text: String?, styleBuilder: TextStyleBuilder?) {
         mTextView?.apply {
@@ -42,6 +44,14 @@ internal class Text(
         rotateHandle?.setOnTouchListener { v, event ->
             when (event.actionMasked) {
                 android.view.MotionEvent.ACTION_DOWN -> {
+                    val location = IntArray(2)
+                    rootView.getLocationOnScreen(location)
+                    val centerX = location[0] + rootView.width / 2f
+                    val centerY = location[1] + rootView.height / 2f
+                    rotateStartAngle = Math.toDegrees(
+                        kotlin.math.atan2((event.rawY - centerY).toDouble(), (event.rawX - centerX).toDouble())
+                    ).toFloat()
+                    rotateStartRotation = rootView.rotation
                     true
                 }
                 android.view.MotionEvent.ACTION_MOVE -> {
@@ -49,10 +59,19 @@ internal class Text(
                     rootView.getLocationOnScreen(location)
                     val centerX = location[0] + rootView.width / 2f
                     val centerY = location[1] + rootView.height / 2f
-                    val angle = Math.toDegrees(
+                    val currentAngle = Math.toDegrees(
                         kotlin.math.atan2((event.rawY - centerY).toDouble(), (event.rawX - centerX).toDouble())
                     ).toFloat()
-                    rootView.rotation = angle
+                    var delta = currentAngle - rotateStartAngle
+                    // 归一化到 -180..180，避免跨越跳变
+                    if (delta > 180f) delta -= 360f
+                    if (delta < -180f) delta += 360f
+                    // 加阻尼，降低旋转速度
+                    val damping = 0.6f
+                    rootView.rotation = rotateStartRotation + delta * damping
+                    true
+                }
+                android.view.MotionEvent.ACTION_UP, android.view.MotionEvent.ACTION_CANCEL -> {
                     true
                 }
                 else -> false
