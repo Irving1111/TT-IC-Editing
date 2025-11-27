@@ -4,6 +4,11 @@ import android.content.Context
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import androidx.test.core.app.ApplicationProvider
+import ja.tt.photoeditor.Graphic
+import ja.tt.photoeditor.GraphicManager
+import ja.tt.photoeditor.PhotoEditorView
+import ja.tt.photoeditor.PhotoEditorViewState
+import ja.tt.photoeditor.ViewType
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
 import org.junit.Test

@@ -2,6 +2,7 @@ package ja.burhanrashid52.photoeditor
 
 import junit.framework.TestCase
 import android.graphics.Bitmap.CompressFormat
+import ja.tt.photoeditor.SaveSettings
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertFalse
 import org.junit.Test

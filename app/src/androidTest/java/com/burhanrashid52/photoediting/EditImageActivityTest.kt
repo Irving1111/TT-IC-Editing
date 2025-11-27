@@ -1,6 +1,5 @@
 package com.burhanrashid52.photoediting
 
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.view.View
@@ -16,6 +15,7 @@ import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.filters.LargeTest
 import androidx.test.rule.ActivityTestRule
 import androidx.test.runner.AndroidJUnit4
+import com.tt.photoediting.EditImageActivity
 import junit.framework.TestCase.*
 import org.hamcrest.Description
 import org.hamcrest.Matcher

@@ -10,13 +10,7 @@ import androidx.test.espresso.UiController
 import androidx.test.espresso.ViewAction
 import androidx.test.espresso.matcher.ViewMatchers
 import org.hamcrest.Matcher
-import java.lang.RuntimeException
-import kotlin.Throws
 
-/**
- * Helper used to test "pinch" actions.
- * Taken from https://stackoverflow.com/a/46443628
- */
 object PinchTestHelper {
     fun pinchOut(): ViewAction {
         return object : ViewAction {

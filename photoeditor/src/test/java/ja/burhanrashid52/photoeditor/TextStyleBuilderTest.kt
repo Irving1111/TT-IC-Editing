@@ -5,10 +5,11 @@ import android.graphics.Typeface
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.widget.TextView
+import ja.tt.photoeditor.TextBorder
+import ja.tt.photoeditor.TextShadow
+import ja.tt.photoeditor.TextStyleBuilder
 import junit.framework.TestCase.*
-import org.junit.Assert
 import org.junit.Test
-import org.mockito.Mock
 import org.mockito.Mockito
 
 class TextStyleBuilderTest {
