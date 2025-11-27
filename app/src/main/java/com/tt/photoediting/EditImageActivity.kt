@@ -192,10 +192,8 @@ class EditImageActivity : BaseActivity(), OnPhotoEditorListener, View.OnClickLis
             TextEditorDialogFragment.show(this, text.toString(), colorCode)
         textEditorDialogFragment.setOnTextEditorListener(object :
             TextEditorDialogFragment.TextEditorListener {
-            override fun onDone(inputText: String, colorCode: Int) {
-                val styleBuilder = TextStyleBuilder()
-                styleBuilder.withTextColor(colorCode)
-                mPhotoEditor.editText(rootView, inputText, styleBuilder)
+            override fun onDone(inputText: String, style: ja.tt.photoeditor.TextStyleBuilder) {
+                mPhotoEditor.editText(rootView, inputText, style)
                 mTxtCurrentTool.setText(R.string.label_text)
             }
         })
@@ -394,10 +392,8 @@ class EditImageActivity : BaseActivity(), OnPhotoEditorListener, View.OnClickLis
                 val textEditorDialogFragment = TextEditorDialogFragment.show(this)
                 textEditorDialogFragment.setOnTextEditorListener(object :
                     TextEditorDialogFragment.TextEditorListener {
-                    override fun onDone(inputText: String, colorCode: Int) {
-                        val styleBuilder = TextStyleBuilder()
-                        styleBuilder.withTextColor(colorCode)
-                        mPhotoEditor.addText(inputText, styleBuilder)
+                    override fun onDone(inputText: String, style: ja.tt.photoeditor.TextStyleBuilder) {
+                        mPhotoEditor.addText(inputText, style)
                         mTxtCurrentTool.setText(R.string.label_text)
                     }
                 })

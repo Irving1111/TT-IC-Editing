@@ -44,6 +44,10 @@ open class TextStyleBuilder {
         values[TextStyle.COLOR] = color
     }
 
+    fun withTextAlpha(alpha: Float) {
+        values[TextStyle.ALPHA] = alpha
+    }
+
     /**
      * Set this [Typeface] style
      *
@@ -122,6 +126,10 @@ open class TextStyleBuilder {
                     val color = value as Int
                     applyTextColor(textView, color)
                 }
+                TextStyle.ALPHA -> {
+                    val alpha = value as Float
+                    applyTextAlpha(textView, alpha)
+                }
                 TextStyle.FONT_FAMILY -> {
                     val typeface = value as Typeface
                     applyFontFamily(textView, typeface)
@@ -173,6 +181,10 @@ open class TextStyleBuilder {
 
     protected open fun applyTextSize(textView: TextView, size: Float) {
         textView.textSize = size
+    }
+
+    protected open fun applyTextAlpha(textView: TextView, alpha: Float) {
+        textView.alpha = alpha
     }
 
     protected fun applyTextShadow(
@@ -250,6 +262,7 @@ open class TextStyleBuilder {
     enum class TextStyle(val property: String) {
         SIZE("TextSize"),
         COLOR("TextColor"),
+        ALPHA("Alpha"),
         GRAVITY("Gravity"),
         FONT_FAMILY("FontFamily"),
         BACKGROUND("Background"),

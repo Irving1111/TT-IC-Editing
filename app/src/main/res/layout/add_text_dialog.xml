@@ -35,11 +35,109 @@
         android:singleLine="true"
         android:textColorPrimary="#FFFFFF"
         android:textSize="40sp"
-        app:layout_constraintBottom_toTopOf="@+id/add_text_color_picker_recycler_view"
+        app:layout_constraintBottom_toTopOf="@+id/layoutFontFamily"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/add_text_done_tv"
         tools:visibility="visible" />
+
+    <LinearLayout
+        android:id="@+id/layoutFontFamily"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/add_text_edit_text">
+
+        <RadioGroup
+            android:id="@+id/rgFontFamily"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <RadioButton
+                android:id="@+id/rbFontDefault"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="默认"/>
+            <RadioButton
+                android:id="@+id/rbFontSans"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="无衬线"/>
+            <RadioButton
+                android:id="@+id/rbFontSerif"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="衬线"/>
+        </RadioGroup>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layoutTextSize"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/layoutFontFamily">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="字号"
+            android:textColor="@android:color/white"
+            android:layout_marginEnd="8dp"/>
+        <SeekBar
+            android:id="@+id/seekBarSize"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:max="24"/>
+        <TextView
+            android:id="@+id/tvSizeValue"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:text="20"
+            android:textColor="@android:color/white"
+            android:gravity="end"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layoutTextAlpha"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/layoutTextSize">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="透明度"
+            android:textColor="@android:color/white"
+            android:layout_marginEnd="8dp"/>
+        <SeekBar
+            android:id="@+id/seekBarAlpha"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:max="50"/>
+        <TextView
+            android:id="@+id/tvAlphaValue"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:text="100%"
+            android:textColor="@android:color/white"
+            android:gravity="end"/>
+    </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/add_text_color_picker_recycler_view"
@@ -47,6 +145,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintTop_toBottomOf="@+id/layoutTextAlpha"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
