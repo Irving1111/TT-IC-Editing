@@ -25,10 +25,22 @@
 
     <ImageView
         android:id="@+id/imgPhotoEditorClose"
-        android:layout_width="15dp"
-        android:layout_height="15dp"
+        android:layout_width="18dp"
+        android:layout_height="18dp"
         android:layout_gravity="top|start"
         android:elevation="1dp"
         android:src="@drawable/ic_remove" />
+
+    <TextView
+        android:id="@+id/tvPhotoEditorRotate"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="4dp"
+        android:gravity="center"
+        android:text="↻"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        android:background="@drawable/rounded_border_tv"/>
 
 </FrameLayout>

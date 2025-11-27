@@ -181,6 +181,10 @@ internal class MultiTouchListener(
             super.onLongPress(e)
             mOnGestureControl?.onLongClick()
         }
+        override fun onDoubleTap(e: MotionEvent): Boolean {
+            mOnGestureControl?.onLongClick()
+            return true
+        }
     }
 
     companion object {

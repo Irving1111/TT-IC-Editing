@@ -23,6 +23,7 @@ internal class Text(
 ) {
 
     private var mTextView: TextView? = null
+    private var rotateHandle: View? = null
 
     fun buildView(text: String?, styleBuilder: TextStyleBuilder?) {
         mTextView?.apply {
@@ -36,6 +37,27 @@ internal class Text(
         mMultiTouchListener.setOnGestureControl(onGestureControl)
         val rootView = rootView
         rootView.setOnTouchListener(mMultiTouchListener)
+        // 单手旋转把手
+        rotateHandle = rootView.findViewById(R.id.tvPhotoEditorRotate)
+        rotateHandle?.setOnTouchListener { v, event ->
+            when (event.actionMasked) {
+                android.view.MotionEvent.ACTION_DOWN -> {
+                    true
+                }
+                android.view.MotionEvent.ACTION_MOVE -> {
+                    val location = IntArray(2)
+                    rootView.getLocationOnScreen(location)
+                    val centerX = location[0] + rootView.width / 2f
+                    val centerY = location[1] + rootView.height / 2f
+                    val angle = Math.toDegrees(
+                        kotlin.math.atan2((event.rawY - centerY).toDouble(), (event.rawX - centerX).toDouble())
+                    ).toFloat()
+                    rootView.rotation = angle
+                    true
+                }
+                else -> false
+            }
+        }
     }
 
     override fun setupView(rootView: View) {
@@ -43,6 +65,12 @@ internal class Text(
         mTextView?.run {
             gravity = Gravity.CENTER
             typeface = mDefaultTextTypeface
+            // 初始提示
+            if (text.isNullOrEmpty()) {
+                text = "点击输入文案"
+                setTextColor(android.graphics.Color.WHITE)
+                textSize = 24f
+            }
         }
     }
 

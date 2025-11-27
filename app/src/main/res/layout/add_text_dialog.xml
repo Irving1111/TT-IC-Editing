@@ -48,6 +48,7 @@
         android:orientation="horizontal"
         android:gravity="center"
         android:layout_marginTop="8dp"
+        android:background="#66000000"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/add_text_edit_text">
@@ -57,21 +58,27 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
-            <RadioButton
+        <RadioButton
                 android:id="@+id/rbFontDefault"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="默认"/>
+                android:text="默认"
+                android:textColor="@android:color/white"
+                android:textSize="14sp"/>
             <RadioButton
                 android:id="@+id/rbFontSans"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="无衬线"/>
+                android:text="无衬线"
+                android:textColor="@android:color/white"
+                android:textSize="14sp"/>
             <RadioButton
                 android:id="@+id/rbFontSerif"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="衬线"/>
+                android:text="衬线"
+                android:textColor="@android:color/white"
+                android:textSize="14sp"/>
         </RadioGroup>
     </LinearLayout>
 
@@ -129,7 +136,10 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:max="50"/>
+            android:max="50"
+            android:progressTint="@android:color/white"
+            android:thumbTint="@android:color/white"
+            android:progressBackgroundTint="#4DFFFFFF"/>
         <TextView
             android:id="@+id/tvAlphaValue"
             android:layout_width="50dp"

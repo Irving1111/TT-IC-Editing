@@ -140,7 +140,11 @@ class TextEditorDialogFragment : DialogFragment() {
             }
             override fun onBindViewHolder(holder: ColorVH, position: Int) {
                 val color = presetColors[position]
-                holder.view.setBackgroundColor(color)
+                val gd = android.graphics.drawable.GradientDrawable()
+                gd.shape = android.graphics.drawable.GradientDrawable.OVAL
+                gd.setColor(color)
+                gd.setStroke(2, android.graphics.Color.WHITE)
+                holder.view.background = gd
                 holder.itemView.setOnClickListener {
                     mColorCode = color
                     mAddTextEditText.setTextColor(color)
