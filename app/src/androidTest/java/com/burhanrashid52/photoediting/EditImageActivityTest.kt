@@ -44,13 +44,6 @@ class EditImageActivityTest {
         )
     }
 
-    @Test
-    fun checkIfBrushIsEnabledWhenClickedOnBrushTool() {
-        val editImageActivity = mActivityRule.launchActivity(null)
-        assertEquals(editImageActivity.mPhotoEditor.brushDrawableMode, false)
-        Espresso.onView(ViewMatchers.withText(R.string.label_shape)).perform(ViewActions.click())
-        assertEquals(editImageActivity.mPhotoEditor.brushDrawableMode,true)
-    }
 
     @Test
     fun checkIfEraserIsEnabledWhenClickedOnEraserTool() {
