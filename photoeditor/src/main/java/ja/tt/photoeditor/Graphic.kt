@@ -49,6 +49,8 @@ internal abstract class Graphic(
         if (imgClose != null) {
             imgClose.visibility = View.VISIBLE
         }
+        val rotate = rootView.findViewById<View>(R.id.tvPhotoEditorRotate)
+        rotate?.visibility = View.VISIBLE
     }
 
     protected fun buildGestureController(
