@@ -389,14 +389,11 @@ class EditImageActivity : BaseActivity(), OnPhotoEditorListener, View.OnClickLis
     override fun onToolSelected(toolType: ToolType) {
         when (toolType) {
             ToolType.TEXT -> {
-                val textEditorDialogFragment = TextEditorDialogFragment.show(this)
-                textEditorDialogFragment.setOnTextEditorListener(object :
-                    TextEditorDialogFragment.TextEditorListener {
-                    override fun onDone(inputText: String, style: ja.tt.photoeditor.TextStyleBuilder) {
-                        mPhotoEditor.addText(inputText, style)
-                        mTxtCurrentTool.setText(R.string.label_text)
-                    }
-                })
+                val styleBuilder = ja.tt.photoeditor.TextStyleBuilder()
+                styleBuilder.withTextColor(android.graphics.Color.WHITE)
+                styleBuilder.withTextSize(24f)
+                mPhotoEditor.addText("点击输入文案", styleBuilder)
+                mTxtCurrentTool.setText(R.string.label_text)
             }
 
             ToolType.FILTER -> {
