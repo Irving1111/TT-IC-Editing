@@ -31,23 +31,9 @@ class PhotoEditorView @JvmOverloads constructor(
 
     private var mImageFilterView: ImageFilterView
     private var clipSourceImage = false
-
-    // 原图缩放/平移相关
-    private val imageMatrix = Matrix()
-    private var scaleFactor = 1.0f
-    private val minScale = 0.5f
-    private val maxScale = 2.0f
-    private var activePointerId = -1
-    private var lastTouchX = 0f
-    private var lastTouchY = 0f
-    private val imgScaleDetector = ScaleGestureDetector(object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
-        override fun onScale(view: View, detector: ScaleGestureDetector): Boolean {
-            val factor = detector.getScaleFactor()
-            scaleFactor = (scaleFactor * factor).coerceIn(minScale, maxScale)
-            applyImageMatrixScale(detector.getFocusX(), detector.getFocusY())
-            return true
-        }
-    })
+    
+    // 内部回调（用于通知 PhotoEditorImpl 重置变换）
+    internal var onImageChangedCallback: (() -> Unit)? = null
 
     // 裁剪相关
     private var cropMode = false
@@ -93,59 +79,15 @@ class PhotoEditorView @JvmOverloads constructor(
         //Add Gl FilterView
         addView(mImageFilterView, filterParam)
 
-        // 设置原图缩放/平移触控
-        mImgSource.scaleType = ImageView.ScaleType.MATRIX
-        mImgSource.imageMatrix = imageMatrix
-        mImgSource.setOnTouchListener { _, ev ->
-            if (cropMode) {
-                false
-            } else {
-                imgScaleDetector.onTouchEvent(mImgSource, ev)
-                when (ev.actionMasked) {
-                    MotionEvent.ACTION_DOWN -> {
-                        activePointerId = ev.getPointerId(0)
-                        lastTouchX = ev.x
-                        lastTouchY = ev.y
-                    }
-                    MotionEvent.ACTION_MOVE -> {
-                        if (activePointerId != -1 && !imgScaleDetector.isInProgress) {
-                            val idx = ev.findPointerIndex(activePointerId)
-                            if (idx != -1) {
-                                val x = ev.getX(idx)
-                                val y = ev.getY(idx)
-                                val dx = x - lastTouchX
-                                val dy = y - lastTouchY
-                                imageMatrix.postTranslate(dx, dy)
-                                mImgSource.imageMatrix = imageMatrix
-                                lastTouchX = x
-                                lastTouchY = y
-                            }
-                        }
-                    }
-                    MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> activePointerId = -1
-                    MotionEvent.ACTION_POINTER_UP -> {
-                        val pointerIndex = ev.actionIndex
-                        val pointerId = ev.getPointerId(pointerIndex)
-                        if (pointerId == activePointerId) {
-                            val newIdx = if (pointerIndex == 0) 1 else 0
-                            lastTouchX = ev.getX(newIdx)
-                            lastTouchY = ev.getY(newIdx)
-                            activePointerId = ev.getPointerId(newIdx)
-                        }
-                    }
-                }
-                true
-            }
-        }
-
         setWillNotDraw(false)
     }
 
     @SuppressLint("Recycle")
     private fun setupImageSource(attrs: AttributeSet?): LayoutParams {
         mImgSource.id = imgSrcId
-        mImgSource.adjustViewBounds = true
-        mImgSource.scaleType = ImageView.ScaleType.CENTER_INSIDE
+        // 不设置 adjustViewBounds，让 MATRIX scaleType 完全控制
+        // mImgSource.adjustViewBounds = true
+        // ScaleType 将在 PhotoEditorImpl 中设置为 MATRIX
 
         attrs?.let {
             val a = context.obtainStyledAttributes(it, R.styleable.PhotoEditorView)
@@ -219,6 +161,9 @@ class PhotoEditorView @JvmOverloads constructor(
         val param = setupImageSource(null)
         mImgSource.layoutParams = param
     }
+    
+    // 检查是否处于裁剪模式
+    internal fun isCropMode(): Boolean = cropMode
 
     // 裁剪功能
     fun startCropMode(ratio: Float = 0f) {
@@ -236,26 +181,16 @@ class PhotoEditorView @JvmOverloads constructor(
 
     fun applyCrop() {
         val srcBmp = mImgSource.bitmap ?: return
-        val inverse = Matrix()
-        if (!imageMatrix.invert(inverse)) {
-            cancelCropMode()
-            return
-        }
-        val pts = floatArrayOf(cropRect.left, cropRect.top, cropRect.right, cropRect.bottom)
-        inverse.mapPoints(pts)
-        val left = pts[0].coerceIn(0f, (srcBmp.width - 1).toFloat())
-        val top = pts[1].coerceIn(0f, (srcBmp.height - 1).toFloat())
-        val right = pts[2].coerceIn(1f, srcBmp.width.toFloat())
-        val bottom = pts[3].coerceIn(1f, srcBmp.height.toFloat())
-        val x = left.toInt().coerceAtLeast(0)
-        val y = top.toInt().coerceAtLeast(0)
-        val w = (right - left).toInt().coerceAtLeast(1)
-        val h = (bottom - top).toInt().coerceAtLeast(1)
+        // 裁剪时不再需要使用 imageMatrix，因为它在 PhotoEditorImpl 中管理
+        val x = cropRect.left.toInt().coerceAtLeast(0)
+        val y = cropRect.top.toInt().coerceAtLeast(0)
+        val w = cropRect.width().toInt().coerceAtLeast(1).coerceAtMost(srcBmp.width - x)
+        val h = cropRect.height().toInt().coerceAtLeast(1).coerceAtMost(srcBmp.height - y)
         if (x + w <= srcBmp.width && y + h <= srcBmp.height) {
             val cropped = Bitmap.createBitmap(srcBmp, x, y, w, h)
             mImgSource.setImageBitmap(cropped)
             mImageFilterView.setSourceBitmap(cropped)
-            resetTransform()
+            onImageChangedCallback?.invoke()  // 通知重置变换
         }
         cancelCropMode()
     }
@@ -267,7 +202,7 @@ class PhotoEditorView @JvmOverloads constructor(
         val rotated = Bitmap.createBitmap(bmp, 0, 0, bmp.width, bmp.height, m, true)
         mImgSource.setImageBitmap(rotated)
         mImageFilterView.setSourceBitmap(rotated)
-        resetTransform()
+        onImageChangedCallback?.invoke()  // 通知重置变换
     }
 
     // 翻转功能
@@ -277,7 +212,7 @@ class PhotoEditorView @JvmOverloads constructor(
         val flipped = Bitmap.createBitmap(bmp, 0, 0, bmp.width, bmp.height, m, true)
         mImgSource.setImageBitmap(flipped)
         mImageFilterView.setSourceBitmap(flipped)
-        resetTransform()
+        onImageChangedCallback?.invoke()  // 通知重置变换
     }
 
     // 亮度/对比度调整
@@ -292,13 +227,6 @@ class PhotoEditorView @JvmOverloads constructor(
     fun applyBrightnessContrast(brightness: Float, contrast: Float) {
         mImageFilterView.setBrightnessValue(brightness)
         mImageFilterView.setContrastValue(contrast)
-    }
-
-    // 重置变换
-    fun resetTransform() {
-        scaleFactor = 1.0f
-        imageMatrix.reset()
-        mImgSource.imageMatrix = imageMatrix
     }
 
     override fun dispatchDraw(canvas: Canvas) {
@@ -319,8 +247,13 @@ class PhotoEditorView @JvmOverloads constructor(
         canvas.drawCircle(x, y, handleRadius, handlePaint)
     }
 
+    override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
+        // 只在裁剪模式下拦截触摸事件
+        return cropMode
+    }
+
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        if (!cropMode) return super.onTouchEvent(event)
+        if (!cropMode) return false  // 让子视图处理
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
                 dragStartX = event.x
@@ -399,27 +332,6 @@ class PhotoEditorView @JvmOverloads constructor(
         if (nr.left >= 0 && nr.top >= 0 && nr.right <= width && nr.bottom <= height) {
             cropRect.set(nr)
         }
-    }
-
-    private fun applyImageMatrixScale(pivotX: Float, pivotY: Float) {
-        imageMatrix.postScale(
-            scaleFactor / getCurrentMatrixScaleX(),
-            scaleFactor / getCurrentMatrixScaleY(),
-            pivotX, pivotY
-        )
-        mImgSource.imageMatrix = imageMatrix
-    }
-
-    private fun getCurrentMatrixScaleX(): Float {
-        val values = FloatArray(9)
-        imageMatrix.getValues(values)
-        return values[Matrix.MSCALE_X]
-    }
-
-    private fun getCurrentMatrixScaleY(): Float {
-        val values = FloatArray(9)
-        imageMatrix.getValues(values)
-        return values[Matrix.MSCALE_Y]
     } // endregion
 
     companion object {

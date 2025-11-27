@@ -36,6 +36,27 @@ internal class PhotoEditorImpl @SuppressLint("ClickableViewAccessibility") const
     private val mGraphicManager: GraphicManager = GraphicManager(builder.photoEditorView, viewState)
     private val context: Context = builder.context
 
+    // 缩放/平移相关
+    private val imageMatrix = android.graphics.Matrix()
+    private var baseScale = 1.0f  // 初始适配缩放
+    private var scaleFactor = 1.0f  // 相对于baseScale的缩放倍数
+    private val minScale = 0.5f
+    private val maxScale = 2.0f
+    private var activePointerId = -1
+    private var lastTouchX = 0f
+    private var lastTouchY = 0f
+    private var isInitialScaleSet = false
+    private val imgScaleDetector = ja.tt.photoeditor.ScaleGestureDetector(
+        object : ja.tt.photoeditor.ScaleGestureDetector.SimpleOnScaleGestureListener() {
+            override fun onScale(view: View, detector: ja.tt.photoeditor.ScaleGestureDetector): Boolean {
+                val factor = detector.getScaleFactor()
+                scaleFactor = (scaleFactor * factor).coerceIn(minScale, maxScale)
+                applyImageMatrixScale(detector.getFocusX(), detector.getFocusY())
+                return true
+            }
+        }
+    )
+
     override fun addImage(desiredImage: Bitmap) {
         val multiTouchListener = getMultiTouchListener(true)
         val sticker = Sticker(photoEditorView, multiTouchListener, viewState, mGraphicManager)
@@ -204,6 +225,115 @@ internal class PhotoEditorImpl @SuppressLint("ClickableViewAccessibility") const
     override val isCacheEmpty: Boolean
         get() = !isUndoAvailable && !isRedoAvailable
 
+    private fun applyImageMatrixScale(pivotX: Float, pivotY: Float) {
+        val targetScale = baseScale * scaleFactor
+        imageMatrix.postScale(
+            targetScale / getCurrentMatrixScaleX(),
+            targetScale / getCurrentMatrixScaleY(),
+            pivotX, pivotY
+        )
+        imageView.imageMatrix = imageMatrix
+    }
+    
+    // 设置初始缩放，让图片适配屏幕
+    private fun setInitialScale() {
+        if (isInitialScaleSet) return
+        
+        val drawable = imageView.drawable ?: return
+        val imgWidth = drawable.intrinsicWidth
+        val imgHeight = drawable.intrinsicHeight
+        
+        if (imgWidth <= 0 || imgHeight <= 0) return
+        
+        val viewWidth = imageView.width
+        val viewHeight = imageView.height
+        
+        if (viewWidth <= 0 || viewHeight <= 0) return
+        
+        // 计算适配缩放比例（fit center）
+        val scaleX = viewWidth.toFloat() / imgWidth
+        val scaleY = viewHeight.toFloat() / imgHeight
+        baseScale = minOf(scaleX, scaleY)
+        
+        // 计算居中位置
+        val scaledWidth = imgWidth * baseScale
+        val scaledHeight = imgHeight * baseScale
+        val dx = (viewWidth - scaledWidth) / 2f
+        val dy = (viewHeight - scaledHeight) / 2f
+        
+        // 应用初始变换
+        imageMatrix.reset()
+        imageMatrix.postScale(baseScale, baseScale)
+        imageMatrix.postTranslate(dx, dy)
+        imageView.imageMatrix = imageMatrix
+        
+        scaleFactor = 1.0f
+        isInitialScaleSet = true
+    }
+
+    private fun getCurrentMatrixScaleX(): Float {
+        val values = FloatArray(9)
+        imageMatrix.getValues(values)
+        return values[android.graphics.Matrix.MSCALE_X]
+    }
+
+    private fun getCurrentMatrixScaleY(): Float {
+        val values = FloatArray(9)
+        imageMatrix.getValues(values)
+        return values[android.graphics.Matrix.MSCALE_Y]
+    }
+
+    private fun handleScaleAndTranslate(event: android.view.MotionEvent): Boolean {
+        if (photoEditorView.isCropMode()) return false
+
+        imgScaleDetector.onTouchEvent(imageView, event)
+        when (event.actionMasked) {
+            android.view.MotionEvent.ACTION_DOWN -> {
+                activePointerId = event.getPointerId(0)
+                lastTouchX = event.x
+                lastTouchY = event.y
+            }
+            android.view.MotionEvent.ACTION_MOVE -> {
+                if (activePointerId != -1 && !imgScaleDetector.isInProgress) {
+                    val idx = event.findPointerIndex(activePointerId)
+                    if (idx != -1) {
+                        val x = event.getX(idx)
+                        val y = event.getY(idx)
+                        val dx = x - lastTouchX
+                        val dy = y - lastTouchY
+                        imageMatrix.postTranslate(dx, dy)
+                        imageView.imageMatrix = imageMatrix
+                        lastTouchX = x
+                        lastTouchY = y
+                    }
+                }
+            }
+            android.view.MotionEvent.ACTION_UP, android.view.MotionEvent.ACTION_CANCEL -> activePointerId = -1
+            android.view.MotionEvent.ACTION_POINTER_UP -> {
+                val pointerIndex = event.actionIndex
+                val pointerId = event.getPointerId(pointerIndex)
+                if (pointerId == activePointerId) {
+                    val newIdx = if (pointerIndex == 0) 1 else 0
+                    lastTouchX = event.getX(newIdx)
+                    lastTouchY = event.getY(newIdx)
+                    activePointerId = event.getPointerId(newIdx)
+                }
+            }
+        }
+        return true
+    }
+    
+    // 重置图片变换（裁剪、旋转、翻转后调用）
+    private fun resetTransform() {
+        isInitialScaleSet = false
+        imageMatrix.reset()
+        scaleFactor = 1.0f
+        baseScale = 1.0f
+        imageView.imageMatrix = imageMatrix
+        // 重新设置初始缩放
+        imageView.post { setInitialScale() }
+    }
+
 
     init {
         val mDetector = GestureDetector(
@@ -217,10 +347,28 @@ internal class PhotoEditorImpl @SuppressLint("ClickableViewAccessibility") const
                 }
             )
         )
-        imageView.setOnTouchListener { _, event ->
+        
+        // 设置 imageView 为 MATRIX 模式以支持缩放/平移
+        imageView.scaleType = android.widget.ImageView.ScaleType.MATRIX
+        imageView.imageMatrix = imageMatrix
+        
+        // 设置 imageView 的触摸监听器，统一处理所有手势
+        imageView.setOnTouchListener { view, event ->
+            // 如果处于裁剪模式，不处理缩放/平移
+            if (photoEditorView.isCropMode()) {
+                return@setOnTouchListener false
+            }
+            
             mOnPhotoEditorListener?.onTouchSourceImage(event)
             mDetector.onTouchEvent(event)
+            // 处理缩放/平移手势
+            handleScaleAndTranslate(event)
+            true
         }
+        
+        // 设置图片变更回调（裁剪、旋转、翻转后重置变换）
+        photoEditorView.onImageChangedCallback = { resetTransform() }
+        
         photoEditorView.setClipSourceImage(builder.clipSourceImage)
     }
 }
