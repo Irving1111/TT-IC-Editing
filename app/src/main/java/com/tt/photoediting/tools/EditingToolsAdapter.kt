@@ -59,5 +59,8 @@ class EditingToolsAdapter(private val mOnItemSelected: OnItemSelected) :
         mToolList.add(ToolModel("文字", R.drawable.ic_text, ToolType.TEXT))
         mToolList.add(ToolModel("滤镜", R.drawable.ic_photo_filter, ToolType.FILTER))
         mToolList.add(ToolModel("贴纸", R.drawable.ic_sticker, ToolType.STICKER))
+        mToolList.add(ToolModel("裁剪", R.drawable.ic_oval, ToolType.CROP))
+        mToolList.add(ToolModel("旋转", R.drawable.ic_redo, ToolType.ROTATE))
+        mToolList.add(ToolModel("调节", R.drawable.ic_brush, ToolType.ADJUST))
     }
 }

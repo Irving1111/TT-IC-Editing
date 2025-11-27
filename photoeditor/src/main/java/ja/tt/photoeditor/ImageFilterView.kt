@@ -41,6 +41,10 @@ internal class ImageFilterView @JvmOverloads constructor(
     private var bitmapReadyContinuation: Continuation<Bitmap>? = null
     private val mutex = Mutex()
 
+    // 亮度/对比度调整值
+    private var brightnessValue: Float = 0f // -100 ~ 100
+    private var contrastValue: Float = 0f   // -50 ~ 150
+
     init {
         setEGLContextClientVersion(2)
         setRenderer(this)
@@ -74,8 +78,13 @@ internal class ImageFilterView @JvmOverloads constructor(
                 //if an effect is chosen initialize it and apply it to the texture
                 initEffect()
                 applyEffect()
+                renderResult()
+            } else if (brightnessValue != 0f || contrastValue != 0f) {
+                // 亮度/对比度链式应用
+                applyAdjustmentsChain()
+            } else {
+                renderResult()
             }
-            renderResult()
         } catch (t: Throwable) {
             val continuation = bitmapReadyContinuation
             if (continuation != null) {
@@ -247,6 +256,42 @@ internal class ImageFilterView @JvmOverloads constructor(
             // render the result of applyEffect()
             mTexRenderer.renderTexture(mTextures[0])
         }
+    }
+
+    // 亮度/对比度链式处理
+    private fun applyAdjustmentsChain() {
+        var inputTex = mTextures[0]
+        var outputTex = mTextures[1]
+
+        // 亮度：将 -100~100 映射到 EffectFactory.EFFECT_BRIGHTNESS 的 scale
+        if (brightnessValue != 0f) {
+            mEffect = mEffectContext?.factory?.createEffect(EffectFactory.EFFECT_BRIGHTNESS)
+            mEffect?.setParameter("brightness", brightnessValue * 0.02f + 1.0f)
+            mEffect?.apply(inputTex, mImageWidth, mImageHeight, outputTex)
+            inputTex = outputTex
+        }
+
+        // 对比度：将 -50~150 映射到 0.5~2.0
+        if (contrastValue != 0f) {
+            val contrast = (contrastValue + 50f) / 100f
+            mEffect = mEffectContext?.factory?.createEffect(EffectFactory.EFFECT_CONTRAST)
+            mEffect?.setParameter("contrast", contrast)
+            mEffect?.apply(inputTex, mImageWidth, mImageHeight, outputTex)
+            inputTex = outputTex
+        }
+
+        mTexRenderer.renderTexture(inputTex)
+    }
+
+    // 设置亮度/对比度
+    internal fun setBrightnessValue(value: Float) {
+        brightnessValue = value.coerceIn(-100f, 100f)
+        requestRender()
+    }
+
+    internal fun setContrastValue(value: Float) {
+        contrastValue = value.coerceIn(-50f, 150f)
+        requestRender()
     }
 
     companion object {

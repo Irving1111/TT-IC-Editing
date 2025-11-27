@@ -78,6 +78,156 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/guideline" />
 
+    <HorizontalScrollView
+        android:id="@+id/rotateContainer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/tool_bg"
+        android:visibility="gone"
+        android:scrollbars="none"
+        app:layout_constraintBottom_toTopOf="@+id/rvConstraintTools"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingVertical="8dp"
+            android:paddingHorizontal="16dp">
+
+            <Button
+                android:id="@+id/btnRotate90CW"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="顺时90°"
+                android:textColor="@android:color/white"
+                android:minWidth="80dp" />
+
+            <Button
+                android:id="@+id/btnRotate90CCW"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="逆时90°"
+                android:textColor="@android:color/white"
+                android:minWidth="80dp" />
+
+            <Button
+                android:id="@+id/btnRotate180"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="180°"
+                android:textColor="@android:color/white"
+                android:minWidth="80dp" />
+
+            <Button
+                android:id="@+id/btnFlipH"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="水平翻转"
+                android:textColor="@android:color/white"
+                android:minWidth="80dp" />
+
+            <Button
+                android:id="@+id/btnFlipV"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="垂直翻转"
+                android:textColor="@android:color/white"
+                android:minWidth="80dp" />
+
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <HorizontalScrollView
+        android:id="@+id/cropRatioContainer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/tool_bg"
+        android:visibility="gone"
+        android:scrollbars="none"
+        app:layout_constraintBottom_toTopOf="@+id/rvConstraintTools"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingVertical="8dp"
+            android:paddingHorizontal="16dp">
+
+            <Button
+                android:id="@+id/btnCropFree"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="自由"
+                android:textColor="@android:color/white"
+                android:minWidth="60dp" />
+
+            <Button
+                android:id="@+id/btnCrop1_1"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1:1"
+                android:textColor="@android:color/white"
+                android:minWidth="60dp" />
+
+            <Button
+                android:id="@+id/btnCrop3_2"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="3:2"
+                android:textColor="@android:color/white"
+                android:minWidth="60dp" />
+
+            <Button
+                android:id="@+id/btnCrop3_4"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="3:4"
+                android:textColor="@android:color/white"
+                android:minWidth="60dp" />
+
+            <Button
+                android:id="@+id/btnCrop4_3"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="4:3"
+                android:textColor="@android:color/white"
+                android:minWidth="60dp" />
+
+            <Button
+                android:id="@+id/btnCrop9_16"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="9:16"
+                android:textColor="@android:color/white"
+                android:minWidth="60dp" />
+
+            <Button
+                android:id="@+id/btnCrop16_9"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="16:9"
+                android:textColor="@android:color/white"
+                android:minWidth="60dp" />
+
+        </LinearLayout>
+    </HorizontalScrollView>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvConstraintTools"
         android:layout_width="0dp"

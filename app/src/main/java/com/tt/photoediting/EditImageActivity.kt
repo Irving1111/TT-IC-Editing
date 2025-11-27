@@ -67,6 +67,11 @@ class EditImageActivity : BaseActivity(), OnPhotoEditorListener, View.OnClickLis
     private val mConstraintSet = ConstraintSet()
     private var mIsFilterVisible = false
 
+    private lateinit var cropRatioContainer: View
+    private lateinit var rotateContainer: View
+    private var isCropMode = false
+    private var isRotateMode = false
+
     @VisibleForTesting
     var mSaveImageUri: Uri? = null
 
@@ -149,6 +154,9 @@ class EditImageActivity : BaseActivity(), OnPhotoEditorListener, View.OnClickLis
         mRvFilters = findViewById(R.id.rvFilterView)
         mRootView = findViewById(R.id.rootView)
 
+        cropRatioContainer = findViewById(R.id.cropRatioContainer)
+        rotateContainer = findViewById(R.id.rotateContainer)
+
         mImgUndo = findViewById(R.id.imgUndo)
         mImgUndo.setOnClickListener(this)
         mImgUndo.isEnabled = false
@@ -171,6 +179,9 @@ class EditImageActivity : BaseActivity(), OnPhotoEditorListener, View.OnClickLis
 
         val imgShare: ImageView = findViewById(R.id.imgShare)
         imgShare.setOnClickListener(this)
+
+        setupCropRatioButtons()
+        setupRotateButtons()
     }
 
     override fun onEditTextChangeListener(rootView: View, text: String, colorCode: Int) {
@@ -394,6 +405,21 @@ class EditImageActivity : BaseActivity(), OnPhotoEditorListener, View.OnClickLis
                 showFilter(true)
             }
             ToolType.STICKER -> showBottomSheetDialogFragment(mStickerBSFragment)
+            
+            ToolType.CROP -> {
+                mTxtCurrentTool.text = "裁剪"
+                enterCropMode()
+            }
+            
+            ToolType.ROTATE -> {
+                mTxtCurrentTool.text = "旋转"
+                enterRotateMode()
+            }
+            
+            ToolType.ADJUST -> {
+                mTxtCurrentTool.text = "调节"
+                showAdjustOptions()
+            }
         }
     }
 
@@ -437,7 +463,11 @@ class EditImageActivity : BaseActivity(), OnPhotoEditorListener, View.OnClickLis
     }
 
     override fun onBackPressed() {
-        if (mIsFilterVisible) {
+        if (isCropMode) {
+            exitCropMode(false)
+        } else if (isRotateMode) {
+            exitRotateMode()
+        } else if (mIsFilterVisible) {
             showFilter(false)
             mTxtCurrentTool.setText(R.string.app_name)
         } else if (!mPhotoEditor.isCacheEmpty) {
@@ -445,6 +475,220 @@ class EditImageActivity : BaseActivity(), OnPhotoEditorListener, View.OnClickLis
         } else {
             super.onBackPressed()
         }
+    }
+
+    private fun showCropOptions() {
+        val options = arrayOf("自由裁剪", "1:1", "4:3", "16:9", "3:4", "9:16", "取消")
+        AlertDialog.Builder(this)
+            .setTitle("选择裁剪比例")
+            .setItems(options) { dialog, which ->
+                when (which) {
+                    0 -> mPhotoEditorView.startCropMode(0f)
+                    1 -> mPhotoEditorView.startCropMode(1f)
+                    2 -> mPhotoEditorView.startCropMode(4f / 3f)
+                    3 -> mPhotoEditorView.startCropMode(16f / 9f)
+                    4 -> mPhotoEditorView.startCropMode(3f / 4f)
+                    5 -> mPhotoEditorView.startCropMode(9f / 16f)
+                    6 -> dialog.dismiss()
+                }
+                if (which < 6) {
+                    showCropActions()
+                }
+            }
+            .show()
+    }
+
+    private fun showCropActions() {
+        AlertDialog.Builder(this)
+            .setTitle("裁剪操作")
+            .setPositiveButton("应用") { _, _ -> mPhotoEditorView.applyCrop() }
+            .setNegativeButton("取消") { _, _ -> mPhotoEditorView.cancelCropMode() }
+            .show()
+    }
+
+    private fun setupCropRatioButtons() {
+        findViewById<View>(R.id.btnCropFree).setOnClickListener {
+            mPhotoEditorView.startCropMode(0f)
+        }
+        findViewById<View>(R.id.btnCrop1_1).setOnClickListener {
+            mPhotoEditorView.startCropMode(1f)
+        }
+        findViewById<View>(R.id.btnCrop3_2).setOnClickListener {
+            mPhotoEditorView.startCropMode(3f / 2f)
+        }
+        findViewById<View>(R.id.btnCrop3_4).setOnClickListener {
+            mPhotoEditorView.startCropMode(3f / 4f)
+        }
+        findViewById<View>(R.id.btnCrop4_3).setOnClickListener {
+            mPhotoEditorView.startCropMode(4f / 3f)
+        }
+        findViewById<View>(R.id.btnCrop9_16).setOnClickListener {
+            mPhotoEditorView.startCropMode(9f / 16f)
+        }
+        findViewById<View>(R.id.btnCrop16_9).setOnClickListener {
+            mPhotoEditorView.startCropMode(16f / 9f)
+        }
+    }
+
+    private fun enterCropMode() {
+        isCropMode = true
+        cropRatioContainer.visibility = View.VISIBLE
+        mPhotoEditorView.startCropMode(0f)
+        
+        // 隐藏编辑工具栏，显示裁剪操作按钮
+        mRvTools.visibility = View.GONE
+        
+        // 更改底部按钮为裁剪确认/取消
+        findViewById<ImageView>(R.id.imgClose).setOnClickListener {
+            exitCropMode(false)
+        }
+        findViewById<ImageView>(R.id.imgSave).setImageResource(android.R.drawable.ic_menu_save)
+        findViewById<ImageView>(R.id.imgSave).setOnClickListener {
+            exitCropMode(true)
+        }
+    }
+
+    private fun exitCropMode(apply: Boolean) {
+        if (apply) {
+            mPhotoEditorView.applyCrop()
+        } else {
+            mPhotoEditorView.cancelCropMode()
+        }
+        
+        isCropMode = false
+        cropRatioContainer.visibility = View.GONE
+        mRvTools.visibility = View.VISIBLE
+        mTxtCurrentTool.setText(R.string.app_name)
+        
+        // 恢复按钮原始功能
+        findViewById<ImageView>(R.id.imgClose).setOnClickListener(this)
+        findViewById<ImageView>(R.id.imgSave).setImageResource(R.drawable.ic_save)
+        findViewById<ImageView>(R.id.imgSave).setOnClickListener(this)
+    }
+
+    private fun showRotateOptions() {
+        val options = arrayOf("顺时针旋转90°", "逆时针旋转90°", "旋转180°", "水平翻转", "垂直翻转")
+        AlertDialog.Builder(this)
+            .setTitle("选择旋转操作")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> mPhotoEditorView.rotateBaseImage(90)
+                    1 -> mPhotoEditorView.rotateBaseImage(-90)
+                    2 -> mPhotoEditorView.rotateBaseImage(180)
+                    3 -> mPhotoEditorView.flipBaseImage(true)
+                    4 -> mPhotoEditorView.flipBaseImage(false)
+                }
+            }
+            .show()
+    }
+
+    private fun setupRotateButtons() {
+        findViewById<View>(R.id.btnRotate90CW).setOnClickListener {
+            mPhotoEditorView.rotateBaseImage(90)
+        }
+        findViewById<View>(R.id.btnRotate90CCW).setOnClickListener {
+            mPhotoEditorView.rotateBaseImage(-90)
+        }
+        findViewById<View>(R.id.btnRotate180).setOnClickListener {
+            mPhotoEditorView.rotateBaseImage(180)
+        }
+        findViewById<View>(R.id.btnFlipH).setOnClickListener {
+            mPhotoEditorView.flipBaseImage(true)
+        }
+        findViewById<View>(R.id.btnFlipV).setOnClickListener {
+            mPhotoEditorView.flipBaseImage(false)
+        }
+    }
+
+    private fun enterRotateMode() {
+        isRotateMode = true
+        rotateContainer.visibility = View.VISIBLE
+        
+        // 隐藏编辑工具栏
+        mRvTools.visibility = View.GONE
+        
+        // 更改底部按钮为退出/完成
+        findViewById<ImageView>(R.id.imgClose).setOnClickListener {
+            exitRotateMode()
+        }
+        findViewById<ImageView>(R.id.imgSave).setImageResource(android.R.drawable.ic_menu_save)
+        findViewById<ImageView>(R.id.imgSave).setOnClickListener {
+            exitRotateMode()
+        }
+    }
+
+    private fun exitRotateMode() {
+        isRotateMode = false
+        rotateContainer.visibility = View.GONE
+        mRvTools.visibility = View.VISIBLE
+        mTxtCurrentTool.setText(R.string.app_name)
+        
+        // 恢复按钮原始功能
+        findViewById<ImageView>(R.id.imgClose).setOnClickListener(this)
+        findViewById<ImageView>(R.id.imgSave).setImageResource(R.drawable.ic_save)
+        findViewById<ImageView>(R.id.imgSave).setOnClickListener(this)
+    }
+
+    private fun showAdjustOptions() {
+        val dialogView = layoutInflater.inflate(android.R.layout.select_dialog_item, null)
+        val linearLayout = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            setPadding(50, 50, 50, 50)
+        }
+
+        val brightnessLabel = android.widget.TextView(this).apply {
+            text = "亮度: 0"
+            textSize = 16f
+        }
+        val brightnessSeekBar = android.widget.SeekBar(this).apply {
+            max = 200
+            progress = 100
+            setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(seekBar: android.widget.SeekBar?, progress: Int, fromUser: Boolean) {
+                    val value = progress - 100
+                    brightnessLabel.text = "亮度: $value"
+                    if (fromUser) {
+                        mPhotoEditorView.setBrightness(value.toFloat())
+                    }
+                }
+                override fun onStartTrackingTouch(seekBar: android.widget.SeekBar?) {}
+                override fun onStopTrackingTouch(seekBar: android.widget.SeekBar?) {}
+            })
+        }
+
+        val contrastLabel = android.widget.TextView(this).apply {
+            text = "对比度: 0"
+            textSize = 16f
+        }
+        val contrastSeekBar = android.widget.SeekBar(this).apply {
+            max = 200
+            progress = 50
+            setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(seekBar: android.widget.SeekBar?, progress: Int, fromUser: Boolean) {
+                    val value = progress - 50
+                    contrastLabel.text = "对比度: $value"
+                    if (fromUser) {
+                        mPhotoEditorView.setContrast(value.toFloat())
+                    }
+                }
+                override fun onStartTrackingTouch(seekBar: android.widget.SeekBar?) {}
+                override fun onStopTrackingTouch(seekBar: android.widget.SeekBar?) {}
+            })
+        }
+
+        linearLayout.addView(brightnessLabel)
+        linearLayout.addView(brightnessSeekBar)
+        linearLayout.addView(contrastLabel)
+        linearLayout.addView(contrastSeekBar)
+
+        AlertDialog.Builder(this)
+            .setTitle("亮度与对比度调节")
+            .setView(linearLayout)
+            .setPositiveButton("完成", null)
+            .setNegativeButton("重置") { _, _ ->
+                mPhotoEditorView.applyBrightnessContrast(0f, 0f)
+            }
+            .show()
     }
 
     companion object {
