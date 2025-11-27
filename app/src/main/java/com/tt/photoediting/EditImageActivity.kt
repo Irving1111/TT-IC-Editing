@@ -69,8 +69,10 @@ class EditImageActivity : BaseActivity(), OnPhotoEditorListener, View.OnClickLis
 
     private lateinit var cropRatioContainer: View
     private lateinit var rotateContainer: View
+    private lateinit var adjustContainer: View
     private var isCropMode = false
     private var isRotateMode = false
+    private var isAdjustMode = false
 
     @VisibleForTesting
     var mSaveImageUri: Uri? = null
@@ -156,6 +158,7 @@ class EditImageActivity : BaseActivity(), OnPhotoEditorListener, View.OnClickLis
 
         cropRatioContainer = findViewById(R.id.cropRatioContainer)
         rotateContainer = findViewById(R.id.rotateContainer)
+        adjustContainer = findViewById(R.id.adjustContainer)
 
         mImgUndo = findViewById(R.id.imgUndo)
         mImgUndo.setOnClickListener(this)
@@ -467,6 +470,8 @@ class EditImageActivity : BaseActivity(), OnPhotoEditorListener, View.OnClickLis
             exitCropMode(false)
         } else if (isRotateMode) {
             exitRotateMode()
+        } else if (isAdjustMode) {
+            exitAdjustMode()
         } else if (mIsFilterVisible) {
             showFilter(false)
             mTxtCurrentTool.setText(R.string.app_name)
@@ -630,74 +635,82 @@ class EditImageActivity : BaseActivity(), OnPhotoEditorListener, View.OnClickLis
     }
 
     private fun showAdjustOptions() {
-        val dialogView = layoutInflater.inflate(android.R.layout.select_dialog_item, null)
-        val linearLayout = android.widget.LinearLayout(this).apply {
-            orientation = android.widget.LinearLayout.VERTICAL
-            setPadding(50, 50, 50, 50)
-        }
-
-        val brightnessLabel = android.widget.TextView(this).apply {
-            text = "亮度: 0"
-            textSize = 16f
-        }
-        val brightnessSeekBar = android.widget.SeekBar(this).apply {
-            max = 200
-            progress = 100
-            setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
-                override fun onProgressChanged(seekBar: android.widget.SeekBar?, progress: Int, fromUser: Boolean) {
-                    val value = progress - 100
-                    brightnessLabel.text = "亮度: $value"
-                    if (fromUser) {
-                        mPhotoEditorView.setBrightness(value.toFloat())
-                    }
-                }
-                override fun onStartTrackingTouch(seekBar: android.widget.SeekBar?) {}
-                override fun onStopTrackingTouch(seekBar: android.widget.SeekBar?) {}
-            })
-        }
-
-        val contrastLabel = android.widget.TextView(this).apply {
-            text = "对比度: 0"
-            textSize = 16f
-        }
-        val contrastSeekBar = android.widget.SeekBar(this).apply {
-            max = 200
-            progress = 50
-            setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
-                override fun onProgressChanged(seekBar: android.widget.SeekBar?, progress: Int, fromUser: Boolean) {
-                    val value = progress - 50
-                    contrastLabel.text = "对比度: $value"
-                    if (fromUser) {
-                        mPhotoEditorView.setContrast(value.toFloat())
-                    }
-                }
-                override fun onStartTrackingTouch(seekBar: android.widget.SeekBar?) {}
-                override fun onStopTrackingTouch(seekBar: android.widget.SeekBar?) {}
-            })
-        }
-
-        linearLayout.addView(brightnessLabel)
-        linearLayout.addView(brightnessSeekBar)
-        linearLayout.addView(contrastLabel)
-        linearLayout.addView(contrastSeekBar)
-
-        AlertDialog.Builder(this)
-            .setTitle("亮度与对比度调节")
-            .setView(linearLayout)
-            .setPositiveButton("完成") { _, _ ->
-                // 保存亮度/对比度效果到原图
-                lifecycleScope.launch {
-                    try {
-                        mPhotoEditorView.saveBrightnessContrast()
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
+        isAdjustMode = true
+        mTxtCurrentTool.text = "亮度与对比度"
+        
+        // 隐藏其他容器
+        cropRatioContainer.visibility = View.GONE
+        rotateContainer.visibility = View.GONE
+        mRvTools.visibility = View.GONE
+        
+        // 显示调节面板
+        adjustContainer.visibility = View.VISIBLE
+        
+        // 获取控件
+        val seekBarBrightness = findViewById<android.widget.SeekBar>(R.id.seekBarBrightness)
+        val seekBarContrast = findViewById<android.widget.SeekBar>(R.id.seekBarContrast)
+        val tvBrightnessValue = findViewById<TextView>(R.id.tvBrightnessValue)
+        val tvContrastValue = findViewById<TextView>(R.id.tvContrastValue)
+        val btnAdjustReset = findViewById<android.widget.Button>(R.id.btnAdjustReset)
+        val btnAdjustDone = findViewById<android.widget.Button>(R.id.btnAdjustDone)
+        
+        // 重置滑块
+        seekBarBrightness.progress = 100
+        seekBarContrast.progress = 50
+        tvBrightnessValue.text = "0"
+        tvContrastValue.text = "0"
+        
+        // 亮度滑块监听
+        seekBarBrightness.setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: android.widget.SeekBar?, progress: Int, fromUser: Boolean) {
+                val value = progress - 100
+                tvBrightnessValue.text = value.toString()
+                if (fromUser) {
+                    mPhotoEditorView.setBrightness(value.toFloat())
                 }
             }
-            .setNegativeButton("重置") { _, _ ->
-                mPhotoEditorView.applyBrightnessContrast(0f, 0f)
+            override fun onStartTrackingTouch(seekBar: android.widget.SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: android.widget.SeekBar?) {}
+        })
+        
+        // 对比度滑块监听
+        seekBarContrast.setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: android.widget.SeekBar?, progress: Int, fromUser: Boolean) {
+                val value = progress - 50
+                tvContrastValue.text = value.toString()
+                if (fromUser) {
+                    mPhotoEditorView.setContrast(value.toFloat())
+                }
             }
-            .show()
+            override fun onStartTrackingTouch(seekBar: android.widget.SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: android.widget.SeekBar?) {}
+        })
+        
+        // 重置按钮
+        btnAdjustReset.setOnClickListener {
+            seekBarBrightness.progress = 100
+            seekBarContrast.progress = 50
+            mPhotoEditorView.applyBrightnessContrast(0f, 0f)
+        }
+        
+        // 完成按钮
+        btnAdjustDone.setOnClickListener {
+            lifecycleScope.launch {
+                try {
+                    mPhotoEditorView.saveBrightnessContrast()
+                    exitAdjustMode()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+    }
+    
+    private fun exitAdjustMode() {
+        isAdjustMode = false
+        adjustContainer.visibility = View.GONE
+        mRvTools.visibility = View.VISIBLE
+        mTxtCurrentTool.text = getString(R.string.app_name)
     }
 
     companion object {
