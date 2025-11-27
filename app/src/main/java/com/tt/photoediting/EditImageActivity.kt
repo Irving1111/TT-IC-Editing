@@ -684,7 +684,16 @@ class EditImageActivity : BaseActivity(), OnPhotoEditorListener, View.OnClickLis
         AlertDialog.Builder(this)
             .setTitle("亮度与对比度调节")
             .setView(linearLayout)
-            .setPositiveButton("完成", null)
+            .setPositiveButton("完成") { _, _ ->
+                // 保存亮度/对比度效果到原图
+                lifecycleScope.launch {
+                    try {
+                        mPhotoEditorView.saveBrightnessContrast()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            }
             .setNegativeButton("重置") { _, _ ->
                 mPhotoEditorView.applyBrightnessContrast(0f, 0f)
             }

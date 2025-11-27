@@ -217,16 +217,37 @@ class PhotoEditorView @JvmOverloads constructor(
 
     // 亮度/对比度调整
     fun setBrightness(value: Float) {
+        // 显示滤镜视图以应用调整
+        if (mImageFilterView.visibility != VISIBLE) {
+            mImageFilterView.visibility = VISIBLE
+        }
         mImageFilterView.setBrightnessValue(value)
     }
 
     fun setContrast(value: Float) {
+        // 显示滤镜视图以应用调整
+        if (mImageFilterView.visibility != VISIBLE) {
+            mImageFilterView.visibility = VISIBLE
+        }
         mImageFilterView.setContrastValue(value)
     }
 
     fun applyBrightnessContrast(brightness: Float, contrast: Float) {
+        // 如果亮度和对比度都为0，隐藏滤镜视图
+        if (brightness == 0f && contrast == 0f) {
+            mImageFilterView.visibility = GONE
+        } else {
+            mImageFilterView.visibility = VISIBLE
+        }
         mImageFilterView.setBrightnessValue(brightness)
         mImageFilterView.setContrastValue(contrast)
+    }
+    
+    // 保存亮度/对比度调整到原图（公开方法）
+    suspend fun saveBrightnessContrast() {
+        if (mImageFilterView.visibility == VISIBLE) {
+            saveFilter()
+        }
     }
 
     override fun dispatchDraw(canvas: Canvas) {

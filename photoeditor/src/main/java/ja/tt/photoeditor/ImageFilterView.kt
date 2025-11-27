@@ -74,15 +74,26 @@ internal class ImageFilterView @JvmOverloads constructor(
                 loadTextures()
                 mInitialized = true
             }
-            if (mCurrentEffect != PhotoFilter.NONE || mCustomEffect != null) {
-                //if an effect is chosen initialize it and apply it to the texture
+            
+            // 判断是否有任何效果需要应用
+            val hasFilter = mCurrentEffect != PhotoFilter.NONE || mCustomEffect != null
+            val hasAdjustments = brightnessValue != 0f || contrastValue != 0f
+            
+            if (hasFilter && hasAdjustments) {
+                // 先应用滤镜，再应用亮度/对比度
+                initEffect()
+                applyEffect()
+                applyAdjustmentsAfterFilter()
+            } else if (hasFilter) {
+                // 只有滤镜
                 initEffect()
                 applyEffect()
                 renderResult()
-            } else if (brightnessValue != 0f || contrastValue != 0f) {
-                // 亮度/对比度链式应用
+            } else if (hasAdjustments) {
+                // 只有亮度/对比度
                 applyAdjustmentsChain()
             } else {
+                // 没有任何效果
                 renderResult()
             }
         } catch (t: Throwable) {
@@ -258,39 +269,90 @@ internal class ImageFilterView @JvmOverloads constructor(
         }
     }
 
-    // 亮度/对比度链式处理
+    // 亮度/对比度链式处理（从原图开始）
     private fun applyAdjustmentsChain() {
         var inputTex = mTextures[0]
         var outputTex = mTextures[1]
+        var swapped = false
 
-        // 亮度：将 -100~100 映射到 EffectFactory.EFFECT_BRIGHTNESS 的 scale
+        // 亮度：将 -100~100 映射到 0.0~2.0（1.0为原始亮度）
         if (brightnessValue != 0f) {
-            mEffect = mEffectContext?.factory?.createEffect(EffectFactory.EFFECT_BRIGHTNESS)
-            mEffect?.setParameter("brightness", brightnessValue * 0.02f + 1.0f)
-            mEffect?.apply(inputTex, mImageWidth, mImageHeight, outputTex)
+            val brightnessEffect = mEffectContext?.factory?.createEffect(EffectFactory.EFFECT_BRIGHTNESS)
+            val brightness = 1.0f + (brightnessValue / 100f)  // -100->0.0, 0->1.0, 100->2.0
+            brightnessEffect?.setParameter("brightness", brightness)
+            brightnessEffect?.apply(inputTex, mImageWidth, mImageHeight, outputTex)
+            brightnessEffect?.release()
+            // 交换纹理
+            val temp = inputTex
             inputTex = outputTex
+            outputTex = temp
+            swapped = !swapped
         }
 
-        // 对比度：将 -50~150 映射到 0.5~2.0
+        // 对比度：将 -50~150 映射到 0.5~2.0（1.0为原始对比度）
         if (contrastValue != 0f) {
-            val contrast = (contrastValue + 50f) / 100f
-            mEffect = mEffectContext?.factory?.createEffect(EffectFactory.EFFECT_CONTRAST)
-            mEffect?.setParameter("contrast", contrast)
-            mEffect?.apply(inputTex, mImageWidth, mImageHeight, outputTex)
+            val contrastEffect = mEffectContext?.factory?.createEffect(EffectFactory.EFFECT_CONTRAST)
+            val contrast = 1.0f + (contrastValue / 100f)  // -50->0.5, 0->1.0, 150->2.5
+            contrastEffect?.setParameter("contrast", contrast)
+            contrastEffect?.apply(inputTex, mImageWidth, mImageHeight, outputTex)
+            contrastEffect?.release()
+            // 交换纹理
+            val temp = inputTex
             inputTex = outputTex
+            outputTex = temp
+            swapped = !swapped
         }
 
+        // 渲染最终结果
+        mTexRenderer.renderTexture(inputTex)
+    }
+    
+    // 在滤镜效果之后应用亮度/对比度
+    private fun applyAdjustmentsAfterFilter() {
+        var inputTex = mTextures[1]  // 滤镜效果的输出
+        var outputTex = mTextures[0]  // 临时使用原图纹理位置
+        var swapped = false
+
+        // 亮度调整
+        if (brightnessValue != 0f) {
+            val brightnessEffect = mEffectContext?.factory?.createEffect(EffectFactory.EFFECT_BRIGHTNESS)
+            val brightness = 1.0f + (brightnessValue / 100f)
+            brightnessEffect?.setParameter("brightness", brightness)
+            brightnessEffect?.apply(inputTex, mImageWidth, mImageHeight, outputTex)
+            brightnessEffect?.release()
+            val temp = inputTex
+            inputTex = outputTex
+            outputTex = temp
+            swapped = !swapped
+        }
+
+        // 对比度调整
+        if (contrastValue != 0f) {
+            val contrastEffect = mEffectContext?.factory?.createEffect(EffectFactory.EFFECT_CONTRAST)
+            val contrast = 1.0f + (contrastValue / 100f)
+            contrastEffect?.setParameter("contrast", contrast)
+            contrastEffect?.apply(inputTex, mImageWidth, mImageHeight, outputTex)
+            contrastEffect?.release()
+            val temp = inputTex
+            inputTex = outputTex
+            outputTex = temp
+            swapped = !swapped
+        }
+
+        // 渲染最终结果
         mTexRenderer.renderTexture(inputTex)
     }
 
     // 设置亮度/对比度
     internal fun setBrightnessValue(value: Float) {
         brightnessValue = value.coerceIn(-100f, 100f)
+        android.util.Log.d(TAG, "setBrightnessValue: $brightnessValue, mSourceBitmap: $mSourceBitmap, mInitialized: $mInitialized")
         requestRender()
     }
 
     internal fun setContrastValue(value: Float) {
         contrastValue = value.coerceIn(-50f, 150f)
+        android.util.Log.d(TAG, "setContrastValue: $contrastValue, mSourceBitmap: $mSourceBitmap, mInitialized: $mInitialized")
         requestRender()
     }
 
