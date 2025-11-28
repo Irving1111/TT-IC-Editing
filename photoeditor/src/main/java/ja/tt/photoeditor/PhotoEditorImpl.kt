@@ -267,8 +267,8 @@ internal class PhotoEditorImpl @SuppressLint("ClickableViewAccessibility") const
         
         // 重要：向上调整图片位置，让它在可见区域居中
         // 因为底部有工具栏遮挡，所以需要向上偏移
-        val toolbarHeight = viewHeight * 0.2f  // 工具栏大约占屏幕高度20%
-        val dy = (viewHeight - scaledHeight) / 2f - toolbarHeight
+        val toolbarHeight = viewHeight * 0.18f  // 工具栏大约占屏幕高度18%
+        val dy = (viewHeight - scaledHeight) / 2f - toolbarHeight * 0.85f
         
         android.util.Log.d("PhotoEditorImpl", "setInitialScale: imgSize=$imgWidth x $imgHeight, viewSize=$viewWidth x $viewHeight, baseScale=$baseScale, offset=($dx, $dy), toolbarHeight=$toolbarHeight")
         
