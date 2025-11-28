@@ -75,6 +75,7 @@ class EditImageActivity : BaseActivity(), OnPhotoEditorListener, View.OnClickLis
     private var isRotateMode = false
     private var isAdjustMode = false
     private var isStitchMode = false
+    private var isNightMode = false
     
     private var currentStitchBitmaps: List<Bitmap>? = null
     private var currentStitchMode = ImageStitchDialogFragment.StitchMode.HORIZONTAL
@@ -189,6 +190,14 @@ class EditImageActivity : BaseActivity(), OnPhotoEditorListener, View.OnClickLis
 
         val imgShare: ImageView = findViewById(R.id.imgShare)
         imgShare.setOnClickListener(this)
+        
+        val nightOverlay: View = findViewById(R.id.nightOverlay)
+        val tvNightMode: TextView = findViewById(R.id.tvNightMode)
+        tvNightMode.setOnClickListener {
+            isNightMode = !isNightMode
+            nightOverlay.visibility = if (isNightMode) View.VISIBLE else View.GONE
+            tvNightMode.text = if (isNightMode) "日间" else "夜间"
+        }
 
         setupCropRatioButtons()
         setupRotateButtons()
