@@ -466,6 +466,19 @@
         app:layout_constraintEnd_toStartOf="@+id/imgUndo"
         app:layout_constraintStart_toEndOf="@+id/imgCamera" />
 
+    <ImageView
+        android:id="@+id/imgShareDouyin"
+        android:layout_width="@dimen/top_tool_icon_width"
+        android:layout_height="@dimen/top_tool_icon_width"
+        android:background="@color/semi_black_transparent"
+        android:padding="8dp"
+        android:src="@drawable/ic_douyin"
+        android:scaleType="centerInside"
+        android:contentDescription="抖音"
+        app:layout_constraintBottom_toTopOf="@+id/rvConstraintTools"
+        app:layout_constraintEnd_toStartOf="@+id/imgUndo"
+        app:layout_constraintStart_toEndOf="@+id/imgShare" />
+
     <View
         android:id="@+id/nightOverlay"
         android:layout_width="0dp"

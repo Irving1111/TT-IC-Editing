@@ -190,6 +190,8 @@ class EditImageActivity : BaseActivity(), OnPhotoEditorListener, View.OnClickLis
 
         val imgShare: ImageView = findViewById(R.id.imgShare)
         imgShare.setOnClickListener(this)
+        val imgShareDouyin: ImageView = findViewById(R.id.imgShareDouyin)
+        imgShareDouyin.setOnClickListener { shareImageToDouyin() }
         
         val nightOverlay: View = findViewById(R.id.nightOverlay)
         val tvNightMode: TextView = findViewById(R.id.tvNightMode)
@@ -278,19 +280,89 @@ class EditImageActivity : BaseActivity(), OnPhotoEditorListener, View.OnClickLis
         }
     }
 
+    private fun isAppInstalled(packageName: String): Boolean {
+        return try {
+            packageManager.getPackageInfo(packageName, 0)
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+    
+    private fun shareImageToDouyin() {
+        val saveImageUri = mSaveImageUri
+        val douyinPackages = listOf("com.ss.android.ugc.aweme", "com.ss.android.ugc.aweme.lite")
+        val targetPackage = douyinPackages.firstOrNull { isAppInstalled(it) }
+        if (targetPackage == null) {
+            showSnackbar("未安装抖音，请先安装后再试")
+            return
+        }
+        
+        fun startShare(uri: Uri) {
+            try {
+                val intent = Intent(Intent.ACTION_SEND)
+                intent.type = "image/*"
+                intent.setPackage(targetPackage)
+                val shareUri = buildFileProviderUri(uri)
+                intent.putExtra(Intent.EXTRA_STREAM, shareUri)
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                // 主动授予读权限，避免目标App无法读取
+                grantUriPermission(targetPackage, shareUri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                startActivity(intent)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                showSnackbar("分享失败：" + (e.message ?: "未知错误"))
+            }
+        }
+        
+        // 若已有已保存图片，直接分享；否则先保存后分享
+        if (saveImageUri != null) {
+            startShare(saveImageUri)
+        } else {
+            val fileName = System.currentTimeMillis().toString() + "_douyin.png"
+            showLoading("正在准备图片...")
+            mSaveFileHelper.createFile(fileName, object : FileSaveHelper.OnFileCreateResult {
+                override fun onFileCreateResult(created: Boolean, filePath: String?, error: String?, uri: Uri?) {
+                    lifecycleScope.launch {
+                        if (created && filePath != null && uri != null) {
+                            try {
+                                val saveSettings = SaveSettings.Builder()
+                                    .setClearViewsEnabled(true)
+                                    .setTransparencyEnabled(true)
+                                    .build()
+                                val result = mPhotoEditor.saveAsFile(filePath, saveSettings)
+                                hideLoading()
+                                if (result is SaveFileResult.Success) {
+                                    startShare(uri)
+                                } else {
+                                    showSnackbar("保存图片失败，无法分享")
+                                }
+                            } catch (e: Exception) {
+                                hideLoading()
+                                showSnackbar("保存失败：" + (e.message ?: "未知错误"))
+                            }
+                        } else {
+                            hideLoading()
+                            showSnackbar(error ?: "创建文件失败")
+                        }
+                    }
+                }
+            })
+        }
+    }
+    
     private fun shareImage() {
         val saveImageUri = mSaveImageUri
         if (saveImageUri == null) {
             showSnackbar(getString(R.string.msg_save_image_to_share))
             return
         }
-
         val intent = Intent(Intent.ACTION_SEND)
         intent.type = "image/*"
         intent.putExtra(Intent.EXTRA_STREAM, buildFileProviderUri(saveImageUri))
         startActivity(Intent.createChooser(intent, getString(R.string.msg_share_image)))
     }
-
+    
     private fun buildFileProviderUri(uri: Uri): Uri {
         if (FileSaveHelper.isSdkHigherThan28()) {
             return uri
