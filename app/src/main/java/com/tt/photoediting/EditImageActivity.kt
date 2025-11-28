@@ -70,9 +70,15 @@ class EditImageActivity : BaseActivity(), OnPhotoEditorListener, View.OnClickLis
     private lateinit var cropRatioContainer: View
     private lateinit var rotateContainer: View
     private lateinit var adjustContainer: View
+    private lateinit var stitchModeContainer: View
     private var isCropMode = false
     private var isRotateMode = false
     private var isAdjustMode = false
+    private var isStitchMode = false
+    
+    private var currentStitchBitmaps: List<Bitmap>? = null
+    private var currentStitchMode = ImageStitchDialogFragment.StitchMode.HORIZONTAL
+    private var mStitchDialogFragment: ImageStitchDialogFragment? = null
 
     @VisibleForTesting
     var mSaveImageUri: Uri? = null
@@ -159,6 +165,7 @@ class EditImageActivity : BaseActivity(), OnPhotoEditorListener, View.OnClickLis
         cropRatioContainer = findViewById(R.id.cropRatioContainer)
         rotateContainer = findViewById(R.id.rotateContainer)
         adjustContainer = findViewById(R.id.adjustContainer)
+        stitchModeContainer = findViewById(R.id.stitchModeContainer)
 
         mImgUndo = findViewById(R.id.imgUndo)
         mImgUndo.setOnClickListener(this)
@@ -185,6 +192,7 @@ class EditImageActivity : BaseActivity(), OnPhotoEditorListener, View.OnClickLis
 
         setupCropRatioButtons()
         setupRotateButtons()
+        setupStitchModeButtons()
     }
 
     override fun onEditTextChangeListener(rootView: View, text: String, colorCode: Int) {
@@ -355,6 +363,39 @@ class EditImageActivity : BaseActivity(), OnPhotoEditorListener, View.OnClickLis
                 } catch (e: IOException) {
                     e.printStackTrace()
                 }
+                
+                STITCH_PICK_REQUEST -> try {
+                    val clipData = data?.clipData
+                    val bitmaps = mutableListOf<Bitmap>()
+                    
+                    if (clipData != null) {
+                        // 多选模式
+                        val count = clipData.itemCount.coerceAtMost(4)
+                        for (i in 0 until count) {
+                            val uri = clipData.getItemAt(i).uri
+                            val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, uri)
+                            bitmaps.add(bitmap)
+                        }
+                    } else {
+                        // 单选模式
+                        val uri = data?.data
+                        if (uri != null) {
+                            val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, uri)
+                            bitmaps.add(bitmap)
+                        }
+                    }
+                    
+                    if (bitmaps.size >= 2 && bitmaps.size <= 4) {
+                        enterStitchMode(bitmaps)
+                    } else if (bitmaps.size == 1) {
+                        showSnackbar("请至少选择2张图片")
+                    } else {
+                        showSnackbar("最多只能选择4张图片")
+                    }
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                    showSnackbar("加载图片失败")
+                }
             }
         }
     }
@@ -416,6 +457,11 @@ class EditImageActivity : BaseActivity(), OnPhotoEditorListener, View.OnClickLis
                 mTxtCurrentTool.text = "调节"
                 showAdjustOptions()
             }
+            
+            ToolType.STITCH -> {
+                mTxtCurrentTool.text = "拼接"
+                openMultiImagePicker()
+            }
         }
     }
 
@@ -465,6 +511,8 @@ class EditImageActivity : BaseActivity(), OnPhotoEditorListener, View.OnClickLis
             exitRotateMode()
         } else if (isAdjustMode) {
             exitAdjustMode()
+        } else if (isStitchMode) {
+            exitStitchMode()
         } else if (mIsFilterVisible) {
             showFilter(false)
             mTxtCurrentTool.setText(R.string.app_name)
@@ -705,6 +753,101 @@ class EditImageActivity : BaseActivity(), OnPhotoEditorListener, View.OnClickLis
         mRvTools.visibility = View.VISIBLE
         mTxtCurrentTool.text = getString(R.string.app_name)
     }
+    
+    private fun openMultiImagePicker() {
+        val intent = Intent()
+        intent.type = "image/*"
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+        intent.action = Intent.ACTION_GET_CONTENT
+        startActivityForResult(
+            Intent.createChooser(intent, "选择2-4张图片进行拼接"),
+            STITCH_PICK_REQUEST
+        )
+    }
+    
+    private fun setupStitchModeButtons() {
+        findViewById<View>(R.id.btnStitchHorizontal).setOnClickListener {
+            currentStitchMode = ImageStitchDialogFragment.StitchMode.HORIZONTAL
+            applyStitchMode()
+        }
+        findViewById<View>(R.id.btnStitchVertical).setOnClickListener {
+            currentStitchMode = ImageStitchDialogFragment.StitchMode.VERTICAL
+            applyStitchMode()
+        }
+        findViewById<View>(R.id.btnStitchGrid).setOnClickListener {
+            currentStitchMode = ImageStitchDialogFragment.StitchMode.GRID
+            applyStitchMode()
+        }
+        
+        // 让拼接模式工具栏不拦截触摸事件，使图片可以拖动
+        stitchModeContainer.setOnTouchListener { _, event ->
+            // 不消耗事件，让它穿透到下层的PhotoEditorView
+            false
+        }
+    }
+    
+    private fun enterStitchMode(bitmaps: List<Bitmap>) {
+        isStitchMode = true
+        currentStitchBitmaps = bitmaps
+        currentStitchMode = ImageStitchDialogFragment.StitchMode.HORIZONTAL
+        
+        // 隐藏编辑工具栏，显示拼接模式选择
+        mRvTools.visibility = View.GONE
+        stitchModeContainer.visibility = View.VISIBLE
+        
+        // 直接应用默认横向拼接
+        applyStitchMode()
+        
+        // 更改底部按钮为拼接确认/取消
+        findViewById<ImageView>(R.id.imgClose).setOnClickListener {
+            exitStitchMode()
+        }
+        findViewById<ImageView>(R.id.imgSave).setImageResource(android.R.drawable.ic_menu_save)
+        findViewById<ImageView>(R.id.imgSave).setOnClickListener {
+            exitStitchMode(true)
+        }
+    }
+    
+    private fun applyStitchMode() {
+        val bitmaps = currentStitchBitmaps ?: return
+        val stitchedBitmap = ImageStitchUtil.stitchImages(currentStitchMode, bitmaps)
+        if (stitchedBitmap != null) {
+            mPhotoEditor.clearAllViews()
+            mPhotoEditorView.source.setImageBitmap(stitchedBitmap)
+            // 重要：延迟调用确保图片已加载后再重置变换
+            mPhotoEditorView.source.postDelayed({
+                // 通知PhotoEditor图片已更改，重新计算缩放
+                mPhotoEditorView.onImageChangedCallback?.invoke()
+                android.util.Log.d("StitchMode", "Image reset transform called")
+            }, 100)
+            mTxtCurrentTool.text = when(currentStitchMode) {
+                ImageStitchDialogFragment.StitchMode.HORIZONTAL -> "横向拼接"
+                ImageStitchDialogFragment.StitchMode.VERTICAL -> "纵向拼接"
+                ImageStitchDialogFragment.StitchMode.GRID -> "网格拼接"
+            }
+        } else {
+            showSnackbar("拼接失败")
+        }
+    }
+    
+    private fun exitStitchMode(save: Boolean = false) {
+        isStitchMode = false
+        stitchModeContainer.visibility = View.GONE
+        mRvTools.visibility = View.VISIBLE
+        
+        if (!save) {
+            // 取消拼接，恢复原图片（如果需要）
+            // 这里可以根据需求恢复或保持当前图片
+        }
+        
+        mTxtCurrentTool.setText(R.string.app_name)
+        currentStitchBitmaps = null
+        
+        // 恢复按钮原始功能
+        findViewById<ImageView>(R.id.imgClose).setOnClickListener(this)
+        findViewById<ImageView>(R.id.imgSave).setImageResource(R.drawable.ic_save)
+        findViewById<ImageView>(R.id.imgSave).setOnClickListener(this)
+    }
 
     companion object {
 
@@ -713,6 +856,7 @@ class EditImageActivity : BaseActivity(), OnPhotoEditorListener, View.OnClickLis
         const val FILE_PROVIDER_AUTHORITY = "com.burhanrashid52.photoediting.fileprovider"
         private const val CAMERA_REQUEST = 52
         private const val PICK_REQUEST = 53
+        private const val STITCH_PICK_REQUEST = 54
         const val ACTION_NEXTGEN_EDIT = "action_nextgen_edit"
         const val PINCH_TEXT_SCALABLE_INTENT_KEY = "PINCH_TEXT_SCALABLE"
     }

@@ -33,7 +33,7 @@ class PhotoEditorView @JvmOverloads constructor(
     private var clipSourceImage = false
     
     // 内部回调（用于通知 PhotoEditorImpl 重置变换）
-    internal var onImageChangedCallback: (() -> Unit)? = null
+    var onImageChangedCallback: (() -> Unit)? = null
 
     // 裁剪相关
     private var cropMode = false

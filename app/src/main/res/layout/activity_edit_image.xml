@@ -342,6 +342,58 @@
         </LinearLayout>
     </HorizontalScrollView>
 
+    <HorizontalScrollView
+        android:id="@+id/stitchModeContainer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/tool_bg"
+        android:visibility="gone"
+        android:scrollbars="none"
+        android:clickable="false"
+        android:focusable="false"
+        app:layout_constraintBottom_toTopOf="@+id/rvConstraintTools"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingVertical="8dp"
+            android:paddingHorizontal="16dp"
+            android:clickable="false"
+            android:focusable="false">
+
+            <Button
+                android:id="@+id/btnStitchHorizontal"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="横向拼接"
+                android:textColor="@android:color/white"
+                android:minWidth="80dp" />
+
+            <Button
+                android:id="@+id/btnStitchVertical"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="纵向拼接"
+                android:textColor="@android:color/white"
+                android:minWidth="80dp" />
+
+            <Button
+                android:id="@+id/btnStitchGrid"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="网格拼接"
+                android:textColor="@android:color/white"
+                android:minWidth="80dp" />
+
+        </LinearLayout>
+    </HorizontalScrollView>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvConstraintTools"
         android:layout_width="0dp"

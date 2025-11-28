@@ -62,5 +62,6 @@ class EditingToolsAdapter(private val mOnItemSelected: OnItemSelected) :
         mToolList.add(ToolModel("裁剪", R.drawable.ic_oval, ToolType.CROP))
         mToolList.add(ToolModel("旋转", R.drawable.ic_redo, ToolType.ROTATE))
         mToolList.add(ToolModel("调节", R.drawable.ic_brush, ToolType.ADJUST))
+        mToolList.add(ToolModel("拼接", R.drawable.ic_gallery, ToolType.STITCH))
     }
 }

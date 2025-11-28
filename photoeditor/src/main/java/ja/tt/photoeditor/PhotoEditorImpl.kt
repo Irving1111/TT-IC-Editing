@@ -248,7 +248,12 @@ internal class PhotoEditorImpl @SuppressLint("ClickableViewAccessibility") const
         val viewWidth = photoEditorView.width  // 使用 photoEditorView 的宽度
         val viewHeight = photoEditorView.height  // 使用 photoEditorView 的高度
         
-        if (viewWidth <= 0 || viewHeight <= 0) return
+        if (viewWidth <= 0 || viewHeight <= 0) {
+            // 如果视图还没有布局完成，稍后重试
+            android.util.Log.w("PhotoEditorImpl", "View size not ready, retry later")
+            photoEditorView.post { setInitialScale() }
+            return
+        }
         
         // 计算适配缩放比例（fit center）
         val scaleX = viewWidth.toFloat() / imgWidth
@@ -259,9 +264,13 @@ internal class PhotoEditorImpl @SuppressLint("ClickableViewAccessibility") const
         val scaledWidth = imgWidth * baseScale
         val scaledHeight = imgHeight * baseScale
         val dx = (viewWidth - scaledWidth) / 2f
-        val dy = (viewHeight - scaledHeight) / 2f
         
-        android.util.Log.d("PhotoEditorImpl", "setInitialScale: imgSize=$imgWidth x $imgHeight, viewSize=$viewWidth x $viewHeight, baseScale=$baseScale, offset=($dx, $dy)")
+        // 重要：向上调整图片位置，让它在可见区域居中
+        // 因为底部有工具栏遮挡，所以需要向上偏移
+        val toolbarHeight = viewHeight * 0.15f  // 工具栏大约占屏幕高度15%
+        val dy = (viewHeight - scaledHeight) / 2f - toolbarHeight / 2f
+        
+        android.util.Log.d("PhotoEditorImpl", "setInitialScale: imgSize=$imgWidth x $imgHeight, viewSize=$viewWidth x $viewHeight, baseScale=$baseScale, offset=($dx, $dy), toolbarHeight=$toolbarHeight")
         
         // 应用初始变换
         imageMatrix.reset()
@@ -363,6 +372,7 @@ internal class PhotoEditorImpl @SuppressLint("ClickableViewAccessibility") const
                 return@setOnTouchListener false
             }
             
+            android.util.Log.d("PhotoEditorImpl", "Touch event: ${event.actionMasked}")
             mOnPhotoEditorListener?.onTouchSourceImage(event)
             mDetector.onTouchEvent(event)
             // 处理缩放/平移手势
