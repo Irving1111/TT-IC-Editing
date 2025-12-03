@@ -1,5 +1,6 @@
 # TT-IC-Editing
 # TT-IC-Editing
+注: main分支是项目代码；  homework_2 和homework_3分支是课后作业的代码。
 - TT-IC-Editing 是一个基于 Android 的图片编辑器，支持贴纸、文字、滤镜、裁剪、旋转、亮度/对比度调整、图片拼接等功能。
 - 采用分层架构：app 模块负责应用和 UI；photoeditor 模块为图像编辑核心库。
 - 默认使用深色占位图与中文滤镜名称，交互体验贴近主流剪辑类应用。
