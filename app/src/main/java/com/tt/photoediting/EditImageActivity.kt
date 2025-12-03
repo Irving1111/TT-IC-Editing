@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Typeface
 import android.net.Uri
@@ -207,6 +208,9 @@ class EditImageActivity : BaseActivity(), OnPhotoEditorListener, View.OnClickLis
         
         // 让裁剪工具栏不拦截触摸事件，使裁剪框可以操作
         cropRatioContainer.setOnTouchListener { _, _ -> false }
+        
+        // 确保 clipChildren 设置为 false，防止贴纸和裁剪框被裁剪
+        ensureClipSettingsPreserved()
     }
 
     override fun onEditTextChangeListener(rootView: View, text: String, colorCode: Int) {
@@ -931,6 +935,55 @@ class EditImageActivity : BaseActivity(), OnPhotoEditorListener, View.OnClickLis
         findViewById<ImageView>(R.id.imgClose).setOnClickListener(this)
         findViewById<ImageView>(R.id.imgSave).setImageResource(R.drawable.ic_save)
         findViewById<ImageView>(R.id.imgSave).setOnClickListener(this)
+    }
+    
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        
+        // 检测屏幕方向变化
+        when (newConfig.orientation) {
+            Configuration.ORIENTATION_LANDSCAPE -> {
+                Log.d(TAG, "Screen orientation changed to landscape")
+                adjustLayoutForLandscape()
+            }
+            Configuration.ORIENTATION_PORTRAIT -> {
+                Log.d(TAG, "Screen orientation changed to portrait")
+                adjustLayoutForPortrait()
+            }
+        }
+        
+        // 确保 clipChildren 和 clipToPadding 保持为 false
+        ensureClipSettingsPreserved()
+    }
+    
+    private fun ensureClipSettingsPreserved() {
+        // 确保根布局和 PhotoEditorView 的 clipChildren 设置保持为 false
+        mRootView.clipChildren = false
+        mRootView.clipToPadding = false
+        mPhotoEditorView.clipChildren = false
+        mPhotoEditorView.clipToPadding = false
+    }
+    
+    private fun adjustLayoutForLandscape() {
+        // 横屏布局调整：工具栏在右侧，图片在左侧
+        // 不使用 ConstraintSet 重新应用约束，避免覆盖 clipChildren 设置
+        
+        // 只调整图片缩放和位置
+        mRootView.post {
+            // 重新计算图片初始缩放
+            mPhotoEditorView.onImageChangedCallback?.invoke()
+        }
+    }
+    
+    private fun adjustLayoutForPortrait() {
+        // 竖屏布局调整：恢复默认布局
+        // 不使用 ConstraintSet 重新应用约束，避免覆盖 clipChildren 设置
+        
+        // 只调整图片缩放和位置
+        mRootView.post {
+            // 重新计算图片初始缩放
+            mPhotoEditorView.onImageChangedCallback?.invoke()
+        }
     }
 
     companion object {
