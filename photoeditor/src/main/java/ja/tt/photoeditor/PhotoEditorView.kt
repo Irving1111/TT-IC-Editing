@@ -146,6 +146,7 @@ class PhotoEditorView @JvmOverloads constructor(
             }
             mImgSource.setImageBitmap(saveBitmap)
             mImageFilterView.visibility = GONE
+            mImgSource.visibility = VISIBLE  // 恢复显示原图
             saveBitmap
         } else {
             mImgSource.bitmap!!
@@ -154,11 +155,13 @@ class PhotoEditorView @JvmOverloads constructor(
 
     internal fun setFilterEffect(filterType: PhotoFilter) {
         mImageFilterView.visibility = VISIBLE
+        mImgSource.visibility = GONE  // 隐藏原图，只显示滤镜效果
         mImageFilterView.setFilterEffect(filterType)
     }
 
     internal fun setFilterEffect(customEffect: CustomEffect?) {
         mImageFilterView.visibility = VISIBLE
+        mImgSource.visibility = GONE  // 隐藏原图，只显示滤镜效果
         mImageFilterView.setFilterEffect(customEffect)
     }
 
@@ -242,8 +245,10 @@ class PhotoEditorView @JvmOverloads constructor(
         // 如果亮度和对比度都为0，隐藏滤镜视图
         if (brightness == 0f && contrast == 0f) {
             mImageFilterView.visibility = GONE
+            mImgSource.visibility = VISIBLE  // 恢复显示原图
         } else {
             mImageFilterView.visibility = VISIBLE
+            mImgSource.visibility = GONE  // 隐藏原图
         }
         mImageFilterView.setBrightnessValue(brightness)
         mImageFilterView.setContrastValue(contrast)
