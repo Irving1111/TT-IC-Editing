@@ -204,6 +204,9 @@ class EditImageActivity : BaseActivity(), OnPhotoEditorListener, View.OnClickLis
         setupCropRatioButtons()
         setupRotateButtons()
         setupStitchModeButtons()
+        
+        // 让裁剪工具栏不拦截触摸事件，使裁剪框可以操作
+        cropRatioContainer.setOnTouchListener { _, _ -> false }
     }
 
     override fun onEditTextChangeListener(rootView: View, text: String, colorCode: Int) {
