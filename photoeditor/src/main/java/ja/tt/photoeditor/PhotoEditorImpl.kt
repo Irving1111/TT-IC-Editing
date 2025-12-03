@@ -46,6 +46,9 @@ internal class PhotoEditorImpl @SuppressLint("ClickableViewAccessibility") const
     private var lastTouchX = 0f
     private var lastTouchY = 0f
     private var isInitialScaleSet = false
+    // 记录图片的偏移量，用于同步贴纸位置
+    private var imageOffsetX = 0f
+    private var imageOffsetY = 0f
     private val imgScaleDetector = ja.tt.photoeditor.ScaleGestureDetector(
         object : ja.tt.photoeditor.ScaleGestureDetector.SimpleOnScaleGestureListener() {
             override fun onScale(view: View, detector: ja.tt.photoeditor.ScaleGestureDetector): Boolean {
@@ -314,6 +317,10 @@ internal class PhotoEditorImpl @SuppressLint("ClickableViewAccessibility") const
                         val dy = y - lastTouchY
                         imageMatrix.postTranslate(dx, dy)
                         imageView.imageMatrix = imageMatrix
+                        // 更新偏移量并同步所有图层位置
+                        imageOffsetX += dx
+                        imageOffsetY += dy
+                        updateAllLayersPosition(dx, dy)
                         lastTouchX = x
                         lastTouchY = y
                     }
@@ -340,10 +347,25 @@ internal class PhotoEditorImpl @SuppressLint("ClickableViewAccessibility") const
         imageMatrix.reset()
         scaleFactor = 1.0f
         baseScale = 1.0f
+        imageOffsetX = 0f
+        imageOffsetY = 0f
         imageView.imageMatrix = imageMatrix
         // 延迟设置初始缩放，确保视图已经布局完成
         photoEditorView.post { 
             setInitialScale() 
+        }
+    }
+    
+    // 同步更新所有图层（贴纸、文字等）的位置
+    private fun updateAllLayersPosition(dx: Float, dy: Float) {
+        // 遍历 photoEditorView 的所有子视图，更新贴纸和文字的位置
+        for (i in 0 until photoEditorView.childCount) {
+            val child = photoEditorView.getChildAt(i)
+            // 跳过 imageView 和 filterView，只移动贴纸/文字图层
+            if (child != imageView && child.id != 3 && child.id != 1) {
+                child.translationX = child.translationX + dx
+                child.translationY = child.translationY + dy
+            }
         }
     }
 
