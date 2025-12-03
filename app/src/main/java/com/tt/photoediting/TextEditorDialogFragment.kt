@@ -143,7 +143,16 @@ class TextEditorDialogFragment : DialogFragment() {
                 val gd = android.graphics.drawable.GradientDrawable()
                 gd.shape = android.graphics.drawable.GradientDrawable.OVAL
                 gd.setColor(color)
-                gd.setStroke(2, android.graphics.Color.WHITE)
+                
+                // 根据颜色亮度选择边框颜色
+                val isLightColor = isColorLight(color)
+                val strokeColor = if (isLightColor) {
+                    android.graphics.Color.argb(100, 0, 0, 0) // 浅色用深色边框
+                } else {
+                    android.graphics.Color.argb(80, 255, 255, 255) // 深色用浅色边框
+                }
+                gd.setStroke(3, strokeColor)
+                
                 holder.view.background = gd
                 holder.itemView.setOnClickListener {
                     mColorCode = color
@@ -151,6 +160,14 @@ class TextEditorDialogFragment : DialogFragment() {
                 }
             }
             override fun getItemCount(): Int = presetColors.size
+            
+            // 判断颜色是否为浅色
+            private fun isColorLight(color: Int): Boolean {
+                val darkness = 1 - (0.299 * android.graphics.Color.red(color) + 
+                                  0.587 * android.graphics.Color.green(color) + 
+                                  0.114 * android.graphics.Color.blue(color)) / 255
+                return darkness < 0.5
+            }
         }
 
         class ColorVH(itemView: View) : RecyclerView.ViewHolder(itemView) {
