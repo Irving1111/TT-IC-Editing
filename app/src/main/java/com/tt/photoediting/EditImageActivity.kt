@@ -78,6 +78,8 @@ class EditImageActivity : BaseActivity(), OnPhotoEditorListener, View.OnClickLis
     private var isStitchMode = false
     private var isNightMode = false
     
+    private lateinit var tvPlaceholderHint: TextView  // 提示文字
+    
     private var currentStitchBitmaps: List<Bitmap>? = null
     private var currentStitchMode = ImageStitchDialogFragment.StitchMode.HORIZONTAL
     private var mStitchDialogFragment: ImageStitchDialogFragment? = null
@@ -123,9 +125,9 @@ class EditImageActivity : BaseActivity(), OnPhotoEditorListener, View.OnClickLis
 
         mPhotoEditor.setOnPhotoEditorListener(this)
 
-        //Set Image Dynamically
-        mPhotoEditorView.source.setImageResource(R.drawable.paris_tower)
-
+        // 设置默认占位图，使用深色背景
+        mPhotoEditorView.source.setImageResource(R.drawable.placeholder_dark)
+        
         mSaveFileHelper = FileSaveHelper(this)
     }
 
@@ -140,6 +142,8 @@ class EditImageActivity : BaseActivity(), OnPhotoEditorListener, View.OnClickLis
                     val uri = intent.data
                     val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, uri)
                     source.setImageBitmap(bitmap)
+                    // 隐藏提示文字
+                    tvPlaceholderHint.visibility = View.GONE
                 } catch (e: IOException) {
                     e.printStackTrace()
                 }
@@ -151,6 +155,8 @@ class EditImageActivity : BaseActivity(), OnPhotoEditorListener, View.OnClickLis
                     val imageUri = intent.data
                     if (imageUri != null) {
                         source.setImageURI(imageUri)
+                        // 隐藏提示文字
+                        tvPlaceholderHint.visibility = View.GONE
                     }
                 }
             }
@@ -163,6 +169,8 @@ class EditImageActivity : BaseActivity(), OnPhotoEditorListener, View.OnClickLis
         mRvTools = findViewById(R.id.rvConstraintTools)
         mRvFilters = findViewById(R.id.rvFilterView)
         mRootView = findViewById(R.id.rootView)
+        
+        tvPlaceholderHint = findViewById(R.id.tvPlaceholderHint)
 
         cropRatioContainer = findViewById(R.id.cropRatioContainer)
         rotateContainer = findViewById(R.id.rotateContainer)
@@ -439,6 +447,8 @@ class EditImageActivity : BaseActivity(), OnPhotoEditorListener, View.OnClickLis
                     mPhotoEditor.clearAllViews()
                     val photo = data?.extras?.get("data") as Bitmap?
                     mPhotoEditorView.source.setImageBitmap(photo)
+                    // 隐藏提示文字
+                    tvPlaceholderHint.visibility = View.GONE
                 }
 
                 PICK_REQUEST -> try {
@@ -448,6 +458,8 @@ class EditImageActivity : BaseActivity(), OnPhotoEditorListener, View.OnClickLis
                         contentResolver, uri
                     )
                     mPhotoEditorView.source.setImageBitmap(bitmap)
+                    // 隐藏提示文字
+                    tvPlaceholderHint.visibility = View.GONE
                 } catch (e: IOException) {
                     e.printStackTrace()
                 }

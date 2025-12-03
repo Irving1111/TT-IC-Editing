@@ -28,7 +28,23 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:photo_src="@drawable/blank_image" />
+        app:photo_src="@drawable/placeholder_dark" />
+
+    <!-- 提示文字：引导用户选择图片 -->
+    <TextView
+        android:id="@+id/tvPlaceholderHint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="点击相册或相机按钮\n开始编辑图片"
+        android:textColor="#80FFFFFF"
+        android:textSize="18sp"
+        android:gravity="center"
+        android:lineSpacingExtra="4dp"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="@+id/photoEditorView"
+        app:layout_constraintEnd_toEndOf="@+id/photoEditorView"
+        app:layout_constraintStart_toStartOf="@+id/photoEditorView"
+        app:layout_constraintTop_toTopOf="@+id/photoEditorView" />
 
     <ImageView
         android:id="@+id/imgUndo"
