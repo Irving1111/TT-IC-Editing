@@ -179,7 +179,35 @@ class PhotoEditorView @JvmOverloads constructor(
         cropMode = true
         aspectRatio = ratio
         val margin = width * 0.1f
-        cropRect.set(margin, margin, width - margin, height - margin)
+        
+        // 初始化裁剪区域
+        if (aspectRatio > 0f) {
+            // 根据指定的宽高比计算裁剪区域
+            val availableWidth = width - margin * 2
+            val availableHeight = height - margin * 2
+            
+            val rectWidth: Float
+            val rectHeight: Float
+            
+            if (availableWidth / availableHeight > aspectRatio) {
+                // 可用区域更宽，以高度为基准
+                rectHeight = availableHeight
+                rectWidth = rectHeight * aspectRatio
+            } else {
+                // 可用区域更窄，以宽度为基准
+                rectWidth = availableWidth
+                rectHeight = rectWidth / aspectRatio
+            }
+            
+            // 居中放置裁剪框
+            val left = (width - rectWidth) / 2f
+            val top = (height - rectHeight) / 2f
+            cropRect.set(left, top, left + rectWidth, top + rectHeight)
+        } else {
+            // 自由裁剪，使用默认边距
+            cropRect.set(margin, margin, width - margin, height - margin)
+        }
+        
         invalidate()
     }
 
