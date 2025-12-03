@@ -31,7 +31,7 @@ class FilterViewAdapter(private val mFilterListener: FilterListener) :
         val filterPair = mPairList[position]
         val fromAsset = getBitmapFromAsset(holder.itemView.context, filterPair.first)
         holder.mImageFilterView.setImageBitmap(fromAsset)
-        holder.mTxtFilterName.text = filterPair.second.name.replace("_", " ")
+        holder.mTxtFilterName.text = getFilterChineseName(filterPair.second)
     }
 
     override fun getItemCount(): Int {
@@ -59,6 +59,35 @@ class FilterViewAdapter(private val mFilterListener: FilterListener) :
         } catch (e: IOException) {
             e.printStackTrace()
             null
+        }
+    }
+    
+    private fun getFilterChineseName(filter: PhotoFilter): String {
+        return when (filter) {
+            PhotoFilter.NONE -> "原图"
+            PhotoFilter.AUTO_FIX -> "自动修复"
+            PhotoFilter.BLACK_WHITE -> "黑白"
+            PhotoFilter.BRIGHTNESS -> "亮度"
+            PhotoFilter.CONTRAST -> "对比度"
+            PhotoFilter.CROSS_PROCESS -> "交叉冲印"
+            PhotoFilter.DOCUMENTARY -> "纪录片"
+            PhotoFilter.DUE_TONE -> "双色调"
+            PhotoFilter.FILL_LIGHT -> "补光"
+            PhotoFilter.FISH_EYE -> "鱼眼"
+            PhotoFilter.FLIP_VERTICAL -> "垂直翻转"
+            PhotoFilter.FLIP_HORIZONTAL -> "水平翻转"
+            PhotoFilter.GRAIN -> "颗粒"
+            PhotoFilter.GRAY_SCALE -> "灰度"
+            PhotoFilter.LOMISH -> "LOMO"
+            PhotoFilter.NEGATIVE -> "负片"
+            PhotoFilter.POSTERIZE -> "海报化"
+            PhotoFilter.ROTATE -> "旋转"
+            PhotoFilter.SATURATE -> "饱和度"
+            PhotoFilter.SEPIA -> "棕褐色"
+            PhotoFilter.SHARPEN -> "锐化"
+            PhotoFilter.TEMPERATURE -> "色温"
+            PhotoFilter.TINT -> "着色"
+            PhotoFilter.VIGNETTE -> "暗角"
         }
     }
 
